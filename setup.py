@@ -10,9 +10,9 @@ setup(
     description="Python module to to pre-process ClimatEx deep learning data.",
     long_description=open("README.md").read(),
     install_requires=[
-        "pytorch-lightning==2.1.1",
+        "pytorch-lightning",
         "lightning",
-        "torch==2.1.1",
+        "torch",
         "hydra-core",
         "pytorch_msssim",
         "torchvision",

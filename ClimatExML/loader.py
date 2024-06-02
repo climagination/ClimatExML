@@ -56,9 +56,9 @@ class ClimatExSampler(Dataset):
             )
         ), "Dates in paths do not match"
 
-        lr = torch.stack(tuple(torch.load(var[idx]) for var in self.lr_paths), dim=0)
+        lr = torch.stack(tuple(torch.load(var[idx]).float() for var in self.lr_paths), dim=0)
         lr = torch.cat([lr, self.lr_invariant], dim=0)
-        hr = torch.stack(tuple(torch.load(var[idx]) for var in self.hr_paths), dim=0)
+        hr = torch.stack(tuple(torch.load(var[idx]).float() for var in self.hr_paths), dim=0)
 
         return (lr, hr, self.hr_invariant)
 

@@ -182,6 +182,7 @@ class SuperResolutionWGANGP(pl.LightningModule):
                 n_examples=3,
                 cmap="viridis",
             )
+        #self.epoch_num = batch_idx
 
     def validation_step(self, batch, batch_idx):
         lr, hr, hr_cov = batch
@@ -208,18 +209,17 @@ class SuperResolutionWGANGP(pl.LightningModule):
         self,
     ):
         # save files in working directory for inference
-        g_path = f"{os.environ['OUTPUT_DIR']}generator.pt"
-        c_path = f"{os.environ['OUTPUT_DIR']}critic.pt"
+        epoch = self.current_epoch
+        if(epoch % 5 == 0):
+            g_path = f"{os.environ['OUTPUT_DIR']}generator_{epoch}.pt"
+            c_path = f"{os.environ['OUTPUT_DIR']}critic.pt"
 
-        g_scripted = torch.jit.script(self.G)
-        c_scripted = torch.jit.script(self.C)
-        # torch.jit.save(g_scripted, g_path)
-        # torch.jit.save(c_scripted, c_path)
-        g_scripted.save(g_path)
-        c_scripted.save(c_path)
-
-        self.logger.experiment.log_model("Generator", g_path, overwrite=True)
-        self.logger.experiment.log_model("Critic", c_path, overwrite=True)
+            g_scripted = torch.jit.script(self.G)
+            c_scripted = torch.jit.script(self.C)
+            g_scripted.save(g_path)
+            c_scripted.save(c_path)
+            self.logger.experiment.log_model("Generator", g_path, overwrite=True)
+            self.logger.experiment.log_model("Critic", c_path, overwrite=True)
 
     def go_downhill(self, loss, opt):
         self.manual_backward(loss)

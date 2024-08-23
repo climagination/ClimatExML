@@ -10,7 +10,7 @@ import hydra
 from hydra.utils import instantiate
 import os
 import warnings
-
+#from lightning.pytorch import seed_everything
 
 @hydra.main(config_path="conf", config_name="config")
 def main(cfg: dict):
@@ -32,7 +32,7 @@ def main(cfg: dict):
     train_data = instantiate(cfg.train_data)
     validation_data = instantiate(cfg.validation_data)
     invariant = instantiate(cfg.invariant)
-
+    #seed_everything(42,workers=True) #MANUAL RANDOM SEEDS
     clim_data = ClimatExLightning(
         train_data,
         validation_data,

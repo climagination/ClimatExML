@@ -48,7 +48,7 @@ class SuperResolutionWGANGP(pl.LightningModule):
         self.lr_shape = invariant.lr_shape
         self.hr_shape = invariant.hr_shape
         self.hr_invariant_shape = invariant.hr_invariant_shape
-
+        #torch.manual_seed(1) - maybe unessecary 
         # networks
         n_covariates, lr_dim, _ = self.lr_shape
         n_predictands, hr_dim, _ = self.hr_shape

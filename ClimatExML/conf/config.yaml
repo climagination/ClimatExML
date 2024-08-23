@@ -1,4 +1,3 @@
-
 hyperparameters:
   # Adam Optimizer
   learning_rate: 0.00025
@@ -7,16 +6,16 @@ hyperparameters:
   gp_lambda: 10
   alpha: 50.0
   n_critic: 5
-  max_epochs: 50
+  max_epochs: 250
   noise_injection: True
   batch_size: 4
 
 tracking:
   # set COMET_API_KEY environment variable for online mode
   project_name: climatex
-  workspace: nannau-uvic
-  save_dir: /home/kdaust/climx_output/project/
-  experiment_name: comet-gan-stochastic
+  workspace: nadiyashore
+  save_dir: ${oc.env:PROJECT_DIR}
+  experiment_name: temp_all_test10
   log_model: True
   log_every_n_steps: 100
   validation_log_every_n_steps: 500
@@ -31,11 +30,11 @@ hardware:
 invariant:
   _target_: "ClimatExML.mlclasses.InvariantData"
   lr_shape:
-    - 4 # lr covariates
+    - 6 # lr covariates
     - 32 # x size
     - 32 # y size
   hr_shape:
-    - 3 # hr covariates (predictands)
+    - 1 # hr covariates (predictands)
     - 256 # x size
     - 256 # y size
   hr_invariant_shape:
@@ -43,28 +42,28 @@ invariant:
     - 256
     - 256
   hr_invariant_paths: 
-    - ${oc.env:DATA_DIR}/topography256/hr_topography_norm.pt
+    - ${oc.env:DATA_DIR}/topography256/hr_topography_norm_fixed.pt
   lr_invariant_paths:
-    - ${oc.env:DATA_DIR}/topography256/lr_topography_norm.pt
+    - ${oc.env:DATA_DIR}/topography256/lr_topography_norm_fixed.pt
 
 train_data:
   _target_: "ClimatExML.mlclasses.InputVariables"
   lr_paths:
-    - ${oc.env:DATA_DIR}/train256/tas/lr/*.pt
-    - ${oc.env:DATA_DIR}/train256/uas/lr/*.pt
-    - ${oc.env:DATA_DIR}/train256/vas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/train/tas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/train/uas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/train/vas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/train/ps/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/train/cape/lr/*.pt
   hr_paths:
-    - ${oc.env:DATA_DIR}/train256/tas/hr/*.pt
-    - ${oc.env:DATA_DIR}/train256/uas/hr/*.pt
-    - ${oc.env:DATA_DIR}/train256/vas/hr/*.pt
+    - ${oc.env:DATA_DIR}/processed/train/tas/hr/*.pt
 
 validation_data:
   _target_: "ClimatExML.mlclasses.InputVariables"
   lr_paths:
-    - ${oc.env:DATA_DIR}/validation256/tas/lr/*.pt
-    - ${oc.env:DATA_DIR}/validation256/uas/lr/*.pt
-    - ${oc.env:DATA_DIR}/validation256/vas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/validation/tas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/validation/uas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/validation/vas/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/validation/ps/lr/*.pt
+    - ${oc.env:DATA_DIR}/processed/validation/cape/lr/*.pt
   hr_paths:
-    - ${oc.env:DATA_DIR}/validation256/tas/hr/*.pt
-    - ${oc.env:DATA_DIR}/validation256/uas/hr/*.pt
-    - ${oc.env:DATA_DIR}/validation256/vas/hr/*.pt
+    - ${oc.env:DATA_DIR}/processed/validation/tas/hr/*.pt

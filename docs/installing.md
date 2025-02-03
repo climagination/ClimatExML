@@ -70,7 +70,7 @@ Tue Jan  9 14:30:42 2024
 It's important to also verify that PyTorch is installed correctly and is functioning as expected. That is, PyTorch should be able to communicate with the GPU and load tensors on etc. Fortunately, this is easy to check with
 ```python
 import torch
-torch.cuda.is_availabe()
+torch.cuda.is_available()
 ```
 
 This should return `True`.

@@ -29,11 +29,13 @@ In this environment, create an environment variable called `COMET_API_KEY` whose
 ```bash
 export COMET_API_KEY="your_API_key_here"
 ```
-If the user does not want this environment variable to expire at the end of your shell session (such that you will have to redefine it in future shell sessions), then you can instead append the command to your `bash.rc` file (as follows).
+If the user does not want this environment variable to expire at the end of your shell session (such that you will have to redefine it in future shell sessions), then you can instead append the command to the `activate` file in your python environment:
 ```bash
-echo 'export COMET_API_KEY="your_API_key_here"' >> ~/.bashrc
-source ~/.bashrc
+echo 'export COMET_API_KEY="your_API_key_here"' >> ~/your_environment/bin/activate
+source ~/your_environment/bin/activate
 ```
+(Note that if you're using Conda, the process will be slightly different. Refer to Conda's documentation if needed.)
+
 Either way, if done correctly, the command `echo $COMET_API_KEY` will return your API key.
 
 ## Running

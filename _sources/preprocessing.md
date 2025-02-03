@@ -14,7 +14,7 @@ kernelspec:
 
 # Preprocessing
 
-NetCDF4 files, commonly used for storing climate and earth systems data, are not optimized for use with most machine learning applications with heavy io requirements or datasets that are simply too large to hold in GPU/CPU memory. ClimatExML uses [nc2pt](https://github.com/nannau/nc2pt) to resolve this issue. It performs a preprocessing flow on climate fields and converts them from NetCDF4 (`.nc`) to an intermediate file format Zarr (`.zarr`) which allows for the parallel loading and writing to individual PyTorch Lightning files (`.pt`) that can be loaded directly onto GPUs.
+NetCDF4 files, commonly used for storing climate and earth systems data, are not optimized for use with most machine learning applications with heavy io requirements or datasets that are simply too large to hold in GPU/CPU memory. ClimatExML uses [nc2pt](https://github.com/nannau/nc2pt) to resolve this issue. It performs a preprocessing flow on climate fields and converts them from NetCDF4 (`.nc`) to an intermediate file format Zarr (`.zarr`) which allows for the parallel loading and writing to individual PyTorch Lightning files (`.pt`) that can be loaded directly onto GPUs. The remainder of this document describes the nc2pt workflow and installation procedure.
 
 ## What intended use cases of nc2pt?
 * standardizing and making metadata uniform between datasets
@@ -48,15 +48,15 @@ The most obvious downside is that you lose the metadata associated with a netCDF
 ## Requirements
 * [Miniconda](https://docs.conda.io/en/latest/miniconda.html) with Python >= 3.8
 * [xESMF](https://xesmf.readthedocs.io/en/latest/)
+* [nc2pt](https://github.com/nannau/nc2pt)
 
 
-
-### 💽 Installation
-xESMF is only available through Conda, so you will have to be able to install conda on your system. Unfortunately, this is limiting because certain HPCs don't allow conda.
+### 💽 Installing nc2pt
+As part of the preprocessing pipeline, [xESMF](https://xesmf.readthedocs.io/en/stable/) is used for regridding. However, since xESMF is only available through Conda, you will have to be able to install conda on your system. Unfortunately, this is limiting because certain HPCs don't allow conda.
 
 1. Begin by install xESMF here in a conda environment: [xESMF](https://xesmf.readthedocs.io/en/latest/)
 
-2. Clone this repository
+2. Clone the [nc2pt repository](https://github.com/nannau/nc2pt)
 
 3. Install into your conda environment
 

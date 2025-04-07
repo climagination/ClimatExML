@@ -140,7 +140,7 @@ class SuperResolutionWGANGP(pl.LightningModule):
         hr_cov = hr_cov.float()
 
         g_opt, c_opt = self.optimizers()
-        self.toggle_optimizer(c_opt)
+        self.toggle_optimizer(c_opt,optimizer_idx=0)
 
         sr = self.G(lr, hr_cov).detach()
         gradient_penalty = self.compute_gradient_penalty(hr, sr)
@@ -151,7 +151,7 @@ class SuperResolutionWGANGP(pl.LightningModule):
         self.go_downhill(loss_c, c_opt)
 
         if (batch_idx + 1) % self.n_critic == 0:
-            self.toggle_optimizer(g_opt)
+            self.toggle_optimizer(g_opt,optimizer_idx=1)
             sr = self.G(lr, hr_cov)
             n_realisation = 4
             ls1 = [i for i in range(lr.shape[0])]

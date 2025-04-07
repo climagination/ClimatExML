@@ -44,6 +44,11 @@ class ClimatExSampler(Dataset):
 
     def __getitem__(self, idx):
         # check that path has identical dates
+        # for i, var in enumerate(self.hr_paths):
+        #     print(f"Variable {i}: {var}")
+        #     print(f"Length of var: {len(var)}")
+        # if idx >= len(var):
+        #     print(f"Index {idx} is out of range for variable {i} with length {len(var)}")
         lr_basepaths = np.array([os.path.basename(var[idx]) for var in self.lr_paths])
         hr_basepaths = np.array([os.path.basename(var[idx]) for var in self.hr_paths])
 
@@ -55,7 +60,10 @@ class ClimatExSampler(Dataset):
                 [lr_date == hr_date for lr_date, hr_date in zip(lr_dates, hr_dates)]
             )
         ), "Dates in paths do not match"
-
+        for var in self.lr_paths:
+            data = torch.load(var[idx])
+            # print(data)
+            # print(f"Loaded data type: {type(data)}")
         lr = torch.stack(tuple(torch.load(var[idx]).float() for var in self.lr_paths), dim=0)
         lr = torch.cat([lr, self.lr_invariant], dim=0)
         hr = torch.stack(tuple(torch.load(var[idx]).float() for var in self.hr_paths), dim=0)

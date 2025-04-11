@@ -316,7 +316,6 @@ class HRStreamGenerator(nn.Module):
         outf = self.HR_pre(x_fine)  ## HR branch
         out = torch.cat((outc, outf), 1)  ##combine
         out = self.conv3(out)
-        out = self.sig(out)
 
         return out
 

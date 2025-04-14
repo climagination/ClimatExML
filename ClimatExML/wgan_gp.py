@@ -45,6 +45,7 @@ class SuperResolutionWGANGP(pl.LightningModule):
         self.n_critic = hyperparameters.n_critic
         self.alpha = hyperparameters.alpha
         self.is_noise = hyperparameters.noise_injection
+        self.msssim_kernel_size = hyperparameters.msssim_kernel_size
 
         self.lr_shape = invariant.lr_shape
         self.hr_shape = invariant.hr_shape
@@ -110,7 +111,10 @@ class SuperResolutionWGANGP(pl.LightningModule):
         return {
             f"{set_type} MAE": mean_absolute_error(sr, hr),
             f"{set_type} MSE": mean_squared_error(sr, hr),
-            f"{set_type} MSSIM": multiscale_structural_similarity_index_measure(sr, hr),
+            f"{set_type} MSSIM": multiscale_structural_similarity_index_measure(
+                sr, 
+                hr, 
+                kernel_size=self.msssim_kernel_size),
             f"{set_type} Wasserstein Distance": mean_hr - mean_sr,
         }
 

@@ -36,7 +36,7 @@ class CNNTrainer(BaseSuperResolutionTrainer):
 
         self.G = HRStreamGenerator(
             noise=False,
-            filters=64,
+            filters=32,
             fine_dims=hr_dim,
             channels=n_covariates,
             channels_hr_cov=n_hr_covariates,
@@ -44,7 +44,7 @@ class CNNTrainer(BaseSuperResolutionTrainer):
         )
 
     def unpack_batch(self, batch):
-        lr, hr, hr_cov = batch
+        lr, hr, hr_cov = batch[0]
         return lr.float(), hr.float(), hr_cov.float()
 
     def training_step(self, batch, batch_idx):

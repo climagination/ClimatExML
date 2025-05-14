@@ -59,7 +59,7 @@ class CNNTrainer(BaseSuperResolutionTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        lr, hr, hr_cov = self.unpack_batch(batch)
+        lr, hr, hr_cov = batch
         sr = self.G(lr, hr_cov)
         loss = mean_squared_error(sr, hr)
         self.log("Validation MSE", loss, sync_dist=True)

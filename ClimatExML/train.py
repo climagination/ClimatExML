@@ -1,6 +1,7 @@
 import comet_ml
 import lightning as pl
 from ClimatExML.wgan_gp import SuperResolutionWGANGP
+from ClimatExML.cnn import CNNTrainer
 from ClimatExML.loader import ClimatExLightning
 from ClimatExML.mlclasses import InputVariables, InvariantData
 from lightning.pytorch.loggers import CometLogger
@@ -41,13 +42,24 @@ def main(cfg: dict):
         num_workers=hardware.num_workers,
     )
 
-    srmodel = SuperResolutionWGANGP(
-        tracking,
-        hardware,
-        hyperparameters,
-        invariant,
-        log_every_n_steps=tracking.log_every_n_steps,
-    )
+    sr_trainers = {
+        "cnn": CNNTrainer(
+                tracking,
+                hardware,
+                hyperparameters,
+                invariant,
+                log_every_n_steps=tracking.log_every_n_steps,
+            ),
+        "wgan": SuperResolutionWGANGP(
+                tracking,
+                hardware,
+                hyperparameters,
+                invariant,
+                log_every_n_steps=tracking.log_every_n_steps,
+            )
+    }
+
+    srmodel = sr_trainers[cfg.trainer]
 
     trainer = pl.Trainer(
         precision=hardware.precision,

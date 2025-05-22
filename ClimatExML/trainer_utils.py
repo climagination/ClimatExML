@@ -65,3 +65,38 @@ def configure_figure(
             figure_name=f"{set_type}_images_{var}", figure=fig, overwrite=True
         )
         plt.close(fig)
+
+
+def compute_gradient_penalty(critic: torch.nn.Module, real_samples: Tensor, fake_samples: Tensor) -> Tensor:
+    """
+    Computes the gradient penalty for WGAN-GP.
+
+    Args:
+        critic (nn.Module): The critic model.
+        real_samples (Tensor): Real high-resolution samples.
+        fake_samples (Tensor): Generated samples from the generator.
+
+    Returns:
+        Tensor: Scalar gradient penalty loss.
+    """
+    batch_size = real_samples.size(0)
+    device = real_samples.device
+
+    alpha = torch.rand(batch_size, 1, 1, 1, device=device, requires_grad=True).expand_as(real_samples)
+    interpolated = alpha * real_samples + (1 - alpha) * fake_samples
+    interpolated.requires_grad_(True)
+
+    critic_output = critic(interpolated)
+
+    gradients = torch.autograd.grad(
+        outputs=critic_output,
+        inputs=interpolated,
+        grad_outputs=torch.ones_like(critic_output, device=device),
+        create_graph=True,
+        retain_graph=True,
+        only_inputs=True,
+    )[0]
+
+    gradients = gradients.view(batch_size, -1)
+    gradients_norm = torch.sqrt(torch.sum(gradients**2, dim=1) + 1e-12)
+    return ((gradients_norm - 1) ** 2).mean()

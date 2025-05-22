@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 import lightning as pl
 
 class BaseSuperResolutionTrainer(pl.LightningModule, ABC):
+    def __init__(self):
+        super().__init__()
+    
     @abstractmethod
     def training_step(self, batch, batch_idx):
         pass

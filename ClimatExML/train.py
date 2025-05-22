@@ -42,13 +42,24 @@ def main(cfg: dict):
         num_workers=hardware.num_workers,
     )
 
-    srmodel = CNNTrainer(
-        tracking,
-        hardware,
-        hyperparameters,
-        invariant,
-        log_every_n_steps=tracking.log_every_n_steps,
-    )
+    sr_trainers = {
+        "cnn": CNNTrainer(
+                tracking,
+                hardware,
+                hyperparameters,
+                invariant,
+                log_every_n_steps=tracking.log_every_n_steps,
+            ),
+        "wgan": SuperResolutionWGANGP(
+                tracking,
+                hardware,
+                hyperparameters,
+                invariant,
+                log_every_n_steps=tracking.log_every_n_steps,
+            )
+    }
+
+    srmodel = sr_trainers[cfg.trainer]
 
     trainer = pl.Trainer(
         precision=hardware.precision,

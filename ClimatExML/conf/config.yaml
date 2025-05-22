@@ -1,3 +1,5 @@
+# Declare model trainer type, current options: cnn, wgan
+trainer: wgan
 
 hyperparameters:
   # Adam Optimizer

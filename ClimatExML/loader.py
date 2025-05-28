@@ -83,18 +83,20 @@ class ClimatExLightning(pl.LightningDataModule):
         self,
         stage=None,
     ):
-        self.train_data = ClimatExSampler(
-            self.train_data.lr_files,
-            self.train_data.hr_files,
-            self.invariant.hr_invariant_paths,
-            self.invariant.lr_invariant_paths,
-        )
-        self.validation_data = ClimatExSampler(
-            self.validation_data.lr_files,
-            self.validation_data.hr_files,
-            self.invariant.hr_invariant_paths,
-            self.invariant.lr_invariant_paths,
-        )
+        if self.train_data is not None:
+            self.train_data = ClimatExSampler(
+                self.train_data.lr_files,
+                self.train_data.hr_files,
+                self.invariant.hr_invariant_paths,
+                self.invariant.lr_invariant_paths,
+            )
+        if self.validation_data is not None:
+            self.validation_data = ClimatExSampler(
+                self.validation_data.lr_files,
+                self.validation_data.hr_files,
+                self.invariant.hr_invariant_paths,
+                self.invariant.lr_invariant_paths,
+            )
 
     def train_dataloader(self):
         return (

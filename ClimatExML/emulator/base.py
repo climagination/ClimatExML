@@ -11,6 +11,7 @@ class BaseEmulator(ABC):
 
     def __init__(self, model_path: str, device: Union[str, torch.device] = "cuda"):
         self.model_path = model_path
+        device = "cuda" if device == "gpu" else device
         self.device = torch.device(device if torch.cuda.is_available() else "cpu")
 
         self.model = self.load_model()
@@ -40,5 +41,5 @@ class BaseEmulator(ABC):
         outputs = []
         for _ in range(n):
             pred = self.generate(lr_input, hr_invariant)
-            outputs.append(pred.unsqueeze(0))  # shape: [1, C, H, W]
+            outputs.append(pred)  # shape: [1, C, H, W]
         return torch.cat(outputs, dim=0)  # shape: [n, C, H, W]

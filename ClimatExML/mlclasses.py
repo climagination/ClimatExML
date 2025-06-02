@@ -18,8 +18,11 @@ class InvariantData:
 @dataclass
 class InputVariables:
     lr_paths: list
-    hr_paths: list
+    hr_paths: list = None
 
     def __post_init__(self):
         self.lr_files = np.array([sorted(glob.glob(path)) for path in self.lr_paths])
-        self.hr_files = np.array([sorted(glob.glob(path)) for path in self.hr_paths])
+        if self.hr_paths is not None:
+            self.hr_files = np.array([sorted(glob.glob(path)) for path in self.hr_paths])
+        else:
+            self.hr_files = None

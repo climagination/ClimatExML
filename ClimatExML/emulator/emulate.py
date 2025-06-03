@@ -43,7 +43,7 @@ def main(cfg):
     logger.info("Running inference over the provided LR data set...")
 
     outputs = run_inference(emulator=emulator,
-                            emulation_loader=emulation_loader,
+                            dataloader=emulation_loader,
                             ensemble_size=ensemble_size,
                             logger=logger)
 

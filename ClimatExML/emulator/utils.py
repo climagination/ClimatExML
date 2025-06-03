@@ -123,15 +123,17 @@ def save_output_to_zarr(
     assert T == len(datetimes), "Mismatch between time dimension and datetime list"
 
     for c, var in enumerate(output_variables):
-        data = output[:, :, c, :, :].squeeze(1).cpu().numpy()  # shape [T, H, W]
+        data = output[:, :, c, :, :].cpu().numpy()  # shape [T, N, H, W]
+
         ds = xr.Dataset(
             {
-                var: (("time", "rlon", "rlat"), data),
+                var: (("time", "realization", "rlon", "rlat"), data),
             },
             coords={
                 "time": datetimes,
-                "rlon": np.arange(H),
-                "rlat": np.arange(W),
+                "realization": np.arange(data.shape[1]),
+                "rlon": np.arange(data.shape[2]),
+                "rlat": np.arange(data.shape[3]),
             },
         )
         zarr_path = get_save_path_from_example_path(example_path, var, model_path)

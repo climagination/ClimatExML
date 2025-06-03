@@ -91,3 +91,4 @@ emulator:
   output_vairalbes:
     - uas
     - vas
+  ensemble_size: 1

@@ -39,6 +39,7 @@ Edit conf/config.yaml to specify:
 
 - emulation_data.lr_paths: List of glob patterns for LR input files (e.g., uas, vas)
 - output_variables: List of HR variable names your model predicts (e.g., ["uas", "vas"])
+- ensemble_size: Int indicating how many samples should be generated for each timestep
 - hardware.accelerator: "gpu" or "cpu"
 
 ----------

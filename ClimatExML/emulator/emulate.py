@@ -11,13 +11,12 @@ from utils import setup_logger, validate_model_path, run_inference, save_output_
 @hydra.main(config_path="../conf", config_name="config", version_base="1.3")
 def main(cfg):
 
-    ensemble_size = 1
-
     logger = setup_logger()
 
     # Instantiate data
     emulation_data = instantiate(cfg.emulator.emulation_data)
     invariant = instantiate(cfg.invariant)
+    ensemble_size = cfg.emulator.ensemble_size
 
     # Instantiate DataModule
     emulator_dm = ClimatExEmulatorDataModule(

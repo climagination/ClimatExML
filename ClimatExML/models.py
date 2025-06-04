@@ -50,7 +50,7 @@ class DenseResidualBlockNoise(nn.Module):
     The core module of paper: (Residual Dense Network for Image Super-Resolution, CVPR 18)
     """
 
-    def __init__(self, filters, resolution, res_scale=0.8, noise_sd=1):
+    def __init__(self, filters, resolution, res_scale=0.8, noise_sd=1.0):
         super().__init__()
         self.res_scale = res_scale
         self.resolution = resolution
@@ -67,12 +67,12 @@ class DenseResidualBlockNoise(nn.Module):
         self.b3 = block(in_features=3 * filters + 3)
         self.b4 = block(in_features=4 * filters + 4)
         self.b5 = block(in_features=5 * filters + 5, non_linearity=False)
-        self.blocks = [self.b1, self.b2, self.b3, self.b4, self.b5]
+        self.blocks = nn.ModuleList([self.b1, self.b2, self.b3, self.b4, self.b5])
         self.noise_strength = torch.nn.Parameter(torch.mul(torch.ones([]), 10))
 
     def forward(self, x):
         noise = torch.normal(
-            0,
+            0.0,
             self.noise_sd,
             size=[x.shape[0], 1, self.resolution, self.resolution],
             device=x.device,
@@ -82,7 +82,7 @@ class DenseResidualBlockNoise(nn.Module):
         for block in self.blocks:
             out = block(inputs)
             noise = torch.normal(
-                0,
+                0.0,
                 self.noise_sd,
                 size=[x.shape[0], 1, self.resolution, self.resolution],
                 device=x.device,
@@ -90,7 +90,7 @@ class DenseResidualBlockNoise(nn.Module):
             inputs = torch.cat([inputs, out, noise], 1)
 
         noise = torch.normal(
-            0,
+            0.0,
             self.noise_sd,
             size=[x.shape[0], 1, self.resolution, self.resolution],
             device=x.device,

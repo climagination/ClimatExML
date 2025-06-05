@@ -78,3 +78,17 @@ validation_data:
     - ${oc.env:DATA_DIR}/validation/uas/hr/*.pt
     - ${oc.env:DATA_DIR}/validation/vas/hr/*.pt
     - ${oc.env:DATA_DIR}/validation/RH/hr/*.pt
+
+emulator:
+  emulation_data:
+    _target_: "ClimatExML.mlclasses.InputVariables"
+    lr_paths:
+      - ${oc.env:DATA_DIR}/validation/pr/lr/*.pt
+      - ${oc.env:DATA_DIR}/validation/tas/lr/*.pt
+      - "${oc.env:DATA_DIR}/test/uas/lr/*.pt"
+      - "${oc.env:DATA_DIR}/test/vas/lr/*.pt"
+      - ${oc.env:DATA_DIR}/validation/RH/lr/*.pt
+  output_vairalbes:
+    - uas
+    - vas
+  ensemble_size: 1

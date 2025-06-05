@@ -83,18 +83,20 @@ class ClimatExLightning(pl.LightningDataModule):
         self,
         stage=None,
     ):
-        self.train_data = ClimatExSampler(
-            self.train_data.lr_files,
-            self.train_data.hr_files,
-            self.invariant.hr_invariant_paths,
-            self.invariant.lr_invariant_paths,
-        )
-        self.validation_data = ClimatExSampler(
-            self.validation_data.lr_files,
-            self.validation_data.hr_files,
-            self.invariant.hr_invariant_paths,
-            self.invariant.lr_invariant_paths,
-        )
+        if self.train_data is not None:
+            self.train_data = ClimatExSampler(
+                self.train_data.lr_files,
+                self.train_data.hr_files,
+                self.invariant.hr_invariant_paths,
+                self.invariant.lr_invariant_paths,
+            )
+        if self.validation_data is not None:
+            self.validation_data = ClimatExSampler(
+                self.validation_data.lr_files,
+                self.validation_data.hr_files,
+                self.invariant.hr_invariant_paths,
+                self.invariant.lr_invariant_paths,
+            )
 
     def train_dataloader(self):
         return (
@@ -117,4 +119,65 @@ class ClimatExLightning(pl.LightningDataModule):
                 shuffle=False,
                 pin_memory=True,
             ),
+        )
+
+
+class ClimatExEmulatorSampler(Dataset):
+    def __init__(self, lr_paths, lr_invariant_paths, hr_invariant_paths):
+        """
+        Sampler for emulation/inference. Assumes no HR fields,
+        but includes LR and HR invariant covariates.
+        """
+        self.lr_paths = lr_paths
+        self.lr_invariant_paths = lr_invariant_paths
+        self.hr_invariant_paths = hr_invariant_paths
+
+        self.lr_invariant = torch.stack(
+            [torch.load(path).float() for path in self.lr_invariant_paths]
+        )
+        self.hr_invariant = torch.stack(
+            [torch.load(path).float() for path in self.hr_invariant_paths]
+        )
+
+    def __len__(self) -> int:
+        return len(self.lr_paths[0])
+
+    def __getitem__(self, idx):
+        lr = torch.stack([torch.load(var[idx]) for var in self.lr_paths], dim=0)
+        lr = torch.cat([lr, self.lr_invariant], dim=0)
+
+        return lr, self.hr_invariant
+
+
+class ClimatExEmulatorDataModule(pl.LightningDataModule):
+    def __init__(self, emulation_data, invariant, batch_size=1, num_workers=12):
+        """
+        DataModule for emulation/inference.
+
+        Args:
+            emulation_data: Object with .lr_files (no HR data expected).
+            invariant: Object with .lr_invariant_paths and .hr_invariant_paths.
+            batch_size: Batch size (usually 1 for streaming inference).
+            num_workers: Number of workers for data loading.
+        """
+        super().__init__()
+        self.emulation_data = emulation_data
+        self.invariant = invariant
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+
+    def setup(self, stage=None):
+        self.dataset = ClimatExEmulatorSampler(
+            self.emulation_data.lr_files,
+            self.invariant.lr_invariant_paths,
+            self.invariant.hr_invariant_paths,
+        )
+
+    def emulation_dataloader(self):
+        return DataLoader(
+            self.dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+            pin_memory=True,
         )

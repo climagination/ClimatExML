@@ -9,6 +9,9 @@ from pathlib import Path
 import numpy as np
 from torch.utils.data import DataLoader
 from typing import List
+import json
+from typing import Dict
+from glob import glob
 
 
 def setup_logger(name: str = __name__, level: int = logging.INFO) -> logging.Logger:
@@ -125,20 +128,36 @@ def save_output_to_zarr(
     for c, var in enumerate(output_variables):
         data = output[:, :, c, :, :].cpu().numpy()  # shape [T, N, H, W]
 
-        ds = xr.Dataset(
-            {
-                var: (("time", "realization", "rlon", "rlat"), data),
-            },
+        # Load variable-specific metadata
+        metadata = load_metadata_json(var, model_path)
+        units = metadata.get("units", {}).get("original", "unknown")
+        hash_ = metadata.get("hash", "unknown")
+
+        # Construct attributes
+        attrs = {
+            "variable": var,
+            "units": units,
+            "preprocessing_hash": hash_,
+            "emulator_model": model_path.stem,
+        }
+
+        da = xr.DataArray(
+            data,
+            dims=("time", "realization", "rlon", "rlat"),
             coords={
                 "time": datetimes,
                 "realization": np.arange(data.shape[1]),
                 "rlon": np.arange(data.shape[2]),
                 "rlat": np.arange(data.shape[3]),
             },
+            attrs=attrs
         )
+
+        ds = xr.Dataset({var: da})
+
         zarr_path = get_save_path_from_example_path(example_path, var, model_path)
         ds.to_zarr(zarr_path, mode="w")
-        logger.info(f"Saved variable '{var}' to {zarr_path}")
+        logger.info(f"✅ Saved '{var}' to {zarr_path}.")
 
 
 def extract_datetimes_from_filenames(filenames: List[str]) -> np.ndarray:
@@ -183,3 +202,67 @@ def get_save_path_from_example_path(
     model_name = model_path.stem
     dataset_split = example_path.parents[2]  # e.g., .../train or .../validation
     return dataset_split / output_variable / f"hr_inf_{model_name}.zarr"
+
+
+def load_metadata_json(var_name: str, model_path: Path) -> Dict:
+    """
+    Load normalization metadata JSON for a given variable.
+
+    Args:
+        var_name (str): Name of the output variable (e.g., "uas").
+        model_path (Path): Path to the model file (used to locate metadata dir).
+
+    Returns:
+        dict: Parsed metadata dictionary.
+    """
+    metadata_dir = model_path.parent / "metadata"
+    json_files = glob(str(metadata_dir / f"{var_name}_*.json"))
+    if not json_files:
+        raise FileNotFoundError(f"No metadata file found for variable '{var_name}' in {metadata_dir}")
+
+    with open(json_files[0], "r") as f:
+        return json.load(f)
+
+
+def un_normalize(output: torch.Tensor, output_variables: List[str], model_path: Path) -> torch.Tensor:
+    """
+    Un-normalize model output using metadata JSON files for each output variable.
+
+    Args:
+        output (torch.Tensor): Model output of shape [T, N, C, H, W].
+        output_variables (List[str]): Names of the output variables (length must match C).
+        model_path (Path): Path to the model used for inference.
+
+    Returns:
+        torch.Tensor: Un-normalized tensor with same shape.
+    """
+    logger = logging.getLogger(__name__)
+    logger.info(f"🔄 Starting un-normalization for {len(output_variables)} variable(s)...")
+
+    unnormalized = []
+
+    for i, var in enumerate(output_variables):
+        stats = load_metadata_json(var, model_path)
+        logger.info(f"📦 Loaded metadata for '{var}' from model directory.")
+
+        var_tensor = output[:, :, i, :, :]  # [T, N, H, W]
+
+        if stats.get("apply_normalize", False):
+            min_ = stats["min"]
+            max_ = stats["max"]
+            logger.info(f"🔧 Un-normalizing '{var}' using min={min_}, max={max_}")
+            var_tensor = var_tensor * (max_ - min_) + min_
+
+        elif stats.get("apply_standardize", False):
+            mean_ = stats["mean"]
+            std_ = stats["std"]
+            logger.info(f"🔧 Un-standardizing '{var}' using mean={mean_}, std={std_}")
+            var_tensor = var_tensor * std_ + mean_
+
+        else:
+            logger.warning(f"⚠️ No normalization method flagged for '{var}'. Skipping transform.")
+
+        unnormalized.append(var_tensor.unsqueeze(2))  # restore C dim
+
+    logger.info("✅ Un-normalization complete.")
+    return torch.cat(unnormalized, dim=2)  # [T, N, C, H, W]

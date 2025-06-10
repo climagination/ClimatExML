@@ -5,7 +5,7 @@ from hydra.utils import instantiate
 from ClimatExML.loader import ClimatExEmulatorDataModule
 from hrstream import HRStreamEmulator
 
-from utils import setup_logger, validate_model_path, run_inference, save_output_to_zarr
+from utils import setup_logger, validate_model_path, run_inference, save_output_to_zarr, un_normalize
 
 
 @hydra.main(config_path="../conf", config_name="config", version_base="1.3")
@@ -48,7 +48,11 @@ def main(cfg):
                             logger=logger)
 
     output_variables = cfg.emulator.output_variables
-    save_output_to_zarr(output=outputs,
+    # Un-normalize
+    output_variables = cfg.emulator.output_variables
+    un_normalized_outputs = un_normalize(outputs, output_variables, model_path)
+
+    save_output_to_zarr(output=un_normalized_outputs,
                         output_variables=output_variables,
                         model_path=model_path,
                         emulation_loader=emulation_loader,

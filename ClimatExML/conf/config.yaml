@@ -88,7 +88,7 @@ emulator:
       - "${oc.env:DATA_DIR}/test/uas/lr/*.pt"
       - "${oc.env:DATA_DIR}/test/vas/lr/*.pt"
       - ${oc.env:DATA_DIR}/validation/RH/lr/*.pt
-  output_vairalbes:
+  output_varialbes:
     - uas
     - vas
   ensemble_size: 1

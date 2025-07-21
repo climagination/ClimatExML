@@ -28,7 +28,7 @@ Then run:
 
 ```bash
 
-python  emulator/test_inference.py
+python  emulator/emulate.py
 
 ```
 

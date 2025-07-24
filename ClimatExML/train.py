@@ -5,6 +5,7 @@ from ClimatExML.cnn import CNNTrainer
 from ClimatExML.loader import ClimatExLightning
 from ClimatExML.mlclasses import InputVariables, InvariantData
 from lightning.pytorch.loggers import CometLogger
+from lightning.pytorch.callbacks import ModelCheckpoint
 import torch
 import logging
 import hydra
@@ -28,6 +29,16 @@ def main(cfg: dict):
     )
 
     comet_logger.log_hyperparams(cfg.hyperparameters)
+
+    # Checkpoint callback
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=f"{tracking.save_dir}/checkpoints",
+        filename="{epoch}-{step}",
+        save_last=True,
+        save_top_k=1,
+        monitor=None,  # or "val_loss" if you have a meaningful metric
+        every_n_epochs=1,
+    )
 
     # These are objects instantiated with config information (see config.yaml)
     train_data = instantiate(cfg.train_data)
@@ -71,9 +82,11 @@ def main(cfg: dict):
         strategy=hardware.strategy,
         check_val_every_n_epoch=1,
         log_every_n_steps=tracking.log_every_n_steps,
+        callbacks=[checkpoint_callback],
     )
 
-    trainer.fit(srmodel, datamodule=clim_data)
+    resume_path = getattr(cfg, "resume_from_checkpoint", None)
+    trainer.fit(srmodel, datamodule=clim_data, ckpt_path=resume_path)
 
 
 if __name__ == "__main__":

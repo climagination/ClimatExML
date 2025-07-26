@@ -1,5 +1,6 @@
 # Declare model trainer type, current options: cnn, wgan
 trainer: wgan
+resume_from_checkpoint: null
 
 hyperparameters:
   # Adam Optimizer
@@ -16,7 +17,7 @@ hyperparameters:
 tracking:
   # set COMET_API_KEY environment variable for online mode
   project_name: climatex
-  workspace: nannau-uvic
+  workspace: comet_username
   save_dir: ${oc.env:OUTPUT_COMET_ZIP}
   experiment_name: comet-gan-test
   log_model: True
@@ -45,9 +46,9 @@ invariant:
     - 512
     - 512
   hr_invariant_paths: 
-    - ${oc.env:PROJECT_DIR}/ClimatExML/ClimatExML/data/hr_topography_norm.pt
+    - ${oc.env:DATA_DIR}/invariant/topography/hr_invariant/topography.pt
   lr_invariant_paths:
-    - ${oc.env:PROJECT_DIR}/ClimatExML/ClimatExML/data/lr_topography_norm.pt
+    - ${oc.env:DATA_DIR}/invariant/topography/lr_invariant/topography.pt
 
 train_data:
   _target_: "ClimatExML.mlclasses.InputVariables"
@@ -88,7 +89,7 @@ emulator:
       - "${oc.env:DATA_DIR}/test/uas/lr/*.pt"
       - "${oc.env:DATA_DIR}/test/vas/lr/*.pt"
       - ${oc.env:DATA_DIR}/validation/RH/lr/*.pt
-  output_varialbes:
+  output_variables:
     - uas
     - vas
-  ensemble_size: 1
+  ensemble_size: 2

@@ -12,14 +12,14 @@ hyperparameters:
   n_critic: 5
   max_epochs: 50
   noise_injection: false # experimental
-  batch_size: 3
+  batch_size: 4
 
 tracking:
   # set COMET_API_KEY environment variable for online mode
   project_name: test_updated_crps
   workspace: nadiyashore
   save_dir: ${oc.env:OUTPUT_COMET_ZIP}
-  experiment_name: test_updated_crps_128_1
+  experiment_name: test_updated_crps_128_1_a
   log_model: True
   log_every_n_steps: 100
   validation_log_every_n_steps: 500
@@ -35,8 +35,8 @@ invariant:
   _target_: "ClimatExML.mlclasses.InvariantData"
   lr_shape:
     - 6 # lr covariates
-    - 32 # x size
-    - 32 # y size
+    - 16 # x size
+    - 16 # y size
   hr_shape:
     - 1 # hr covariates (predictands)
     - 128 # x size
@@ -46,9 +46,9 @@ invariant:
     - 128
     - 128
   hr_invariant_paths: 
-    - ${oc.env:DATA_DIR}/invariant/topography/hr_invariant/topography.pt
+    - /home/nadiyashore/data/topo/hr_topography_norm_128.pt
   lr_invariant_paths:
-    - ${oc.env:DATA_DIR}/invariant/topography/lr_invariant/topography.pt
+    - /home/nadiyashore/data/topo/lr_topography_norm_128.pt
 
 train_data:
   _target_: "ClimatExML.mlclasses.InputVariables"

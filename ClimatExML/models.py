@@ -287,7 +287,8 @@ class HRStreamGenerator(nn.Module):
         out = self.LR_pre(x_coarse)  ## LR branch
         outc = self.upsampling(out)
         outf = self.HR_pre(x_fine)  ## HR branch
-        out = torch.cat((outc, outf), 1)  ##combine
+        # print("outc shape:",outc.shape, "outf shape:", outf.shape) added as part of debugging
+        out = torch.cat((outc, outf), 1)  ##combine # was breaking on this line until batch size was changed to 4 in config.yaml
         out = self.conv3(out)
         # This precip threshold represents the 0 point in standardized space
         # based on my calculation --- this value is the negative of the mean of

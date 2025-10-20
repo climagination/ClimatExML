@@ -16,10 +16,10 @@ hyperparameters:
 
 tracking:
   # set COMET_API_KEY environment variable for online mode
-  project_name: climatex
-  workspace: comet_username
+  project_name: test_updated_crps
+  workspace: nadiyashore
   save_dir: ${oc.env:OUTPUT_COMET_ZIP}
-  experiment_name: comet-gan-test
+  experiment_name: test_updated_crps_128_1
   log_model: True
   log_every_n_steps: 100
   validation_log_every_n_steps: 500
@@ -28,23 +28,23 @@ hardware:
   num_workers: 0 # modify for cpu requested on SLURM, typically I use 11
   precision: 16-mixed # 16-mixed is unstable, use 32 if memory allows
   accelerator: "gpu"
-  devices: -1
+  devices: [0]
   strategy: "auto" # user "ddp_find_unused_parameters_true" for SLURM
 
 invariant:
   _target_: "ClimatExML.mlclasses.InvariantData"
   lr_shape:
     - 6 # lr covariates
-    - 64 # x size
-    - 64 # y size
+    - 32 # x size
+    - 32 # y size
   hr_shape:
-    - 5 # hr covariates (predictands)
-    - 512 # x size
-    - 512 # y size
+    - 1 # hr covariates (predictands)
+    - 128 # x size
+    - 128 # y size
   hr_invariant_shape:
     - 1 # hr invariant covariates
-    - 512
-    - 512
+    - 128
+    - 128
   hr_invariant_paths: 
     - ${oc.env:DATA_DIR}/invariant/topography/hr_invariant/topography.pt
   lr_invariant_paths:
@@ -53,43 +53,43 @@ invariant:
 train_data:
   _target_: "ClimatExML.mlclasses.InputVariables"
   lr_paths:
-    - ${oc.env:DATA_DIR}/train/pr/lr/*.pt
     - ${oc.env:DATA_DIR}/train/tas/lr/*.pt
     - ${oc.env:DATA_DIR}/train/uas/lr/*.pt
     - ${oc.env:DATA_DIR}/train/vas/lr/*.pt
-    - ${oc.env:DATA_DIR}/train/RH/lr/*.pt
+    - ${oc.env:DATA_DIR}/train/ps/lr/*.pt
+    - ${oc.env:DATA_DIR}/train/cape/lr/*.pt
   hr_paths:
-    - ${oc.env:DATA_DIR}/train/pr/hr/*.pt
+    # - ${oc.env:DATA_DIR}/train/pr/hr/*.pt
     - ${oc.env:DATA_DIR}/train/tas/hr/*.pt
-    - ${oc.env:DATA_DIR}/train/uas/hr/*.pt
-    - ${oc.env:DATA_DIR}/train/vas/hr/*.pt
-    - ${oc.env:DATA_DIR}/train/RH/hr/*.pt
+    # - ${oc.env:DATA_DIR}/train/uas/hr/*.pt
+    # - ${oc.env:DATA_DIR}/train/vas/hr/*.pt
+    # - ${oc.env:DATA_DIR}/train/RH/hr/*.pt
 
 validation_data:
   _target_: "ClimatExML.mlclasses.InputVariables"
   lr_paths:
-    - ${oc.env:DATA_DIR}/validation/pr/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/tas/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/uas/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/vas/lr/*.pt
-    - ${oc.env:DATA_DIR}/validation/RH/lr/*.pt
+    - ${oc.env:DATA_DIR}/validation/ps/lr/*.pt
+    - ${oc.env:DATA_DIR}/validation/cape/lr/*.pt
   hr_paths:
-    - ${oc.env:DATA_DIR}/validation/pr/hr/*.pt
+    # - ${oc.env:DATA_DIR}/validation/pr/hr/*.pt
     - ${oc.env:DATA_DIR}/validation/tas/hr/*.pt
-    - ${oc.env:DATA_DIR}/validation/uas/hr/*.pt
-    - ${oc.env:DATA_DIR}/validation/vas/hr/*.pt
-    - ${oc.env:DATA_DIR}/validation/RH/hr/*.pt
+    # - ${oc.env:DATA_DIR}/validation/uas/hr/*.pt
+    # - ${oc.env:DATA_DIR}/validation/vas/hr/*.pt
+    # - ${oc.env:DATA_DIR}/validation/RH/hr/*.pt
 
-emulator:
-  emulation_data:
-    _target_: "ClimatExML.mlclasses.InputVariables"
-    lr_paths:
-      - ${oc.env:DATA_DIR}/validation/pr/lr/*.pt
-      - ${oc.env:DATA_DIR}/validation/tas/lr/*.pt
-      - "${oc.env:DATA_DIR}/test/uas/lr/*.pt"
-      - "${oc.env:DATA_DIR}/test/vas/lr/*.pt"
-      - ${oc.env:DATA_DIR}/validation/RH/lr/*.pt
-  output_variables:
-    - uas
-    - vas
-  ensemble_size: 2
+# emulator:
+#   emulation_data:
+#     _target_: "ClimatExML.mlclasses.InputVariables"
+#     lr_paths:
+#       - ${oc.env:DATA_DIR}/validation/pr/lr/*.pt
+#       - ${oc.env:DATA_DIR}/validation/tas/lr/*.pt
+#       - "${oc.env:DATA_DIR}/test/uas/lr/*.pt"
+#       - "${oc.env:DATA_DIR}/test/vas/lr/*.pt"
+#       - ${oc.env:DATA_DIR}/validation/RH/lr/*.pt
+#   output_variables:
+#     - uas
+#     - vas
+#   ensemble_size: 2

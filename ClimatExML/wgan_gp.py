@@ -4,6 +4,7 @@ from torchmetrics.functional import mean_absolute_error, mean_squared_error
 from torchmetrics.functional.image import multiscale_structural_similarity_index_measure
 from lightning.pytorch.loggers import CometLogger
 
+from ClimatExML.losses import crps_empirical #added crps_empirical from losses.py
 from ClimatExML.models import HRStreamGenerator, Critic
 from ClimatExML.trainer_utils import go_downhill, configure_figure, compute_gradient_penalty
 from ClimatExML.base_trainer import BaseSuperResolutionTrainer
@@ -94,11 +95,25 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         loss_c = mean_sr - mean_hr + self.gp_lambda * gp
         go_downhill(self, loss_c, c_opt)
 
+        #copied over from wgan_gp_stoch.py 
+        # the n realisation part and crps part are not in wgan_gp.py
         if (batch_idx + 1) % self.n_critic == 0:
             self.toggle_optimizer(g_opt)
             sr = self.G(lr, hr_cov)
-            loss_g = -torch.mean(self.C(sr).detach()) + self.alpha * mean_squared_error(sr, hr)
-            go_downhill(self, loss_g, g_opt)
+            n_realisation = 4
+            ls1 = [i for i in range(lr.shape[0])]
+            dat_lr = [lr[i,...].unsqueeze(0).repeat(n_realisation,1,1,1) for i in ls1]
+            dat_hr = [hr[i,...] for i in ls1]
+            dat_sr = [self.G(lr,hr_cov[0:n_realisation,...]) for lr in dat_lr]
+            crps_ls = [crps_empirical(sr,hr) for sr,hr in zip(dat_sr,dat_hr)]
+            crps = torch.cat(crps_ls)
+
+            loss_g = (
+                -torch.mean(self.C(sr).detach())
+                + self.alpha * torch.mean(crps)
+            )
+
+            self.go_downhill(loss_g, g_opt)
 
         self.log_dict(
             self.losses("Train", hr, sr.detach(), mean_sr.detach(), mean_hr.detach()),

@@ -104,9 +104,6 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
             ls1 = [i for i in range(lr.shape[0])]
             dat_lr = [lr[i,...].unsqueeze(0).repeat(n_realisation,1,1,1) for i in ls1]
             dat_hr = [hr[i,...] for i in ls1]
-            # print("dat_lr shape:", dat_lr[0].shape) added to debug
-            # print("dat_hr shape:", dat_hr[0].shape)
-            # print("lr shape:", lr.shape)
             dat_sr = [self.G(lr,hr_cov[0:n_realisation,...]) for lr in dat_lr]
             crps_ls = [crps_empirical(sr,hr) for sr,hr in zip(dat_sr,dat_hr)]
             crps = torch.cat(crps_ls)

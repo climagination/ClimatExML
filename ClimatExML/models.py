@@ -274,9 +274,7 @@ class HRStreamGenerator(nn.Module):
         self.upsampling = nn.Sequential(*upsample_layers)
         # Final output block
         self.conv3 = nn.Sequential(
-            # nn.Conv2d(filters * 2, filters + 1, kernel_size=3, stride=1, padding=1),
             nn.Conv2d(filters * 2, filters + 1, kernel_size=3, stride=1, padding=1),
-            # ResidualInResidualDenseBlock(filters + 1, noise, resolution=fine_dims), noise layer removed due to "bubles"/noise artifacts
             nn.LeakyReLU(),
             nn.Conv2d(filters + 1, n_predictands, kernel_size=3, stride=1, padding=1),
         )

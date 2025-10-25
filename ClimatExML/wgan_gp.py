@@ -51,6 +51,7 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         self.n_critic = hyperparameters.n_critic
         self.alpha = hyperparameters.alpha
         self.is_noise = hyperparameters.noise_injection
+        self.n_realisations = hyperparameters.n_realisations
 
         self.lr_shape = invariant.lr_shape
         self.hr_shape = invariant.hr_shape
@@ -95,25 +96,34 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         loss_c = mean_sr - mean_hr + self.gp_lambda * gp
         go_downhill(self, loss_c, c_opt)
 
-        #copied over from wgan_gp_stoch.py 
-        # the n realisation part and crps part are not in wgan_gp.py
+        # Train generator every n_critic iterations
         if (batch_idx + 1) % self.n_critic == 0:
             self.toggle_optimizer(g_opt)
+            
+            # Generate single realization for adversarial loss
             sr = self.G(lr, hr_cov)
-            n_realisation = 4 # related to batch size needs to be egual in config
-            ls1 = [i for i in range(lr.shape[0])]
-            dat_lr = [lr[i,...].unsqueeze(0).repeat(n_realisation,1,1,1) for i in ls1]
-            dat_hr = [hr[i,...] for i in ls1]
-            dat_sr = [self.G(lr,hr_cov[0:n_realisation,...]) for lr in dat_lr]
-            crps_ls = [crps_empirical(sr,hr) for sr,hr in zip(dat_sr,dat_hr)]
+            
+            # Prepare data for CRPS computation (multiple realizations per sample)
+            batch_size = lr.shape[0]
+            
+            # Repeat each sample n_realisation times to generate ensemble
+            dat_lr = [lr[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                    for i in range(batch_size)]
+            dat_hr_cov = [hr_cov[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                        for i in range(batch_size)]
+            dat_hr = [hr[i] for i in range(batch_size)]
+            
+            # Generate ensemble realizations and compute CRPS for each sample
+            dat_sr = [self.G(lr_rep, cov_rep) 
+                    for lr_rep, cov_rep in zip(dat_lr, dat_hr_cov)]
+            crps_ls = [crps_empirical(sr_ens, hr_true) 
+                    for sr_ens, hr_true in zip(dat_sr, dat_hr)]
             crps = torch.cat(crps_ls)
-
-            loss_g = (
-                -torch.mean(self.C(sr).detach())
-                + self.alpha * torch.mean(crps)
-            )
-
-            go_downhill(self,loss_g, g_opt) #added self as its own argument here with Seamus
+            
+            # Combined loss: adversarial + content (CRPS)
+            loss_g = -torch.mean(self.C(sr)) + self.alpha * torch.mean(crps)
+            
+            go_downhill(self, loss_g, g_opt)
 
         self.log_dict(
             self.losses("Train", hr, sr.detach(), mean_sr.detach(), mean_hr.detach()),

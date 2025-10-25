@@ -4,6 +4,7 @@ from torchmetrics.functional import mean_absolute_error, mean_squared_error
 from torchmetrics.functional.image import multiscale_structural_similarity_index_measure
 from lightning.pytorch.loggers import CometLogger
 
+from ClimatExML.losses import crps_empirical #added crps_empirical from losses.py
 from ClimatExML.models import HRStreamGenerator, Critic
 from ClimatExML.trainer_utils import go_downhill, configure_figure, compute_gradient_penalty
 from ClimatExML.base_trainer import BaseSuperResolutionTrainer
@@ -50,6 +51,7 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         self.n_critic = hyperparameters.n_critic
         self.alpha = hyperparameters.alpha
         self.is_noise = hyperparameters.noise_injection
+        self.n_realisations = hyperparameters.n_realisations
 
         self.lr_shape = invariant.lr_shape
         self.hr_shape = invariant.hr_shape
@@ -94,10 +96,33 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         loss_c = mean_sr - mean_hr + self.gp_lambda * gp
         go_downhill(self, loss_c, c_opt)
 
+        # Train generator every n_critic iterations
         if (batch_idx + 1) % self.n_critic == 0:
             self.toggle_optimizer(g_opt)
+            
+            # Generate single realization for adversarial loss
             sr = self.G(lr, hr_cov)
-            loss_g = -torch.mean(self.C(sr).detach()) + self.alpha * mean_squared_error(sr, hr)
+            
+            # Prepare data for CRPS computation (multiple realizations per sample)
+            batch_size = lr.shape[0]
+            
+            # Repeat each sample n_realisation times to generate ensemble
+            dat_lr = [lr[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                    for i in range(batch_size)]
+            dat_hr_cov = [hr_cov[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                        for i in range(batch_size)]
+            dat_hr = [hr[i] for i in range(batch_size)]
+            
+            # Generate ensemble realizations and compute CRPS for each sample
+            dat_sr = [self.G(lr_rep, cov_rep) 
+                    for lr_rep, cov_rep in zip(dat_lr, dat_hr_cov)]
+            crps_ls = [crps_empirical(sr_ens, hr_true) 
+                    for sr_ens, hr_true in zip(dat_sr, dat_hr)]
+            crps = torch.cat(crps_ls)
+            
+            # Combined loss: adversarial + content (CRPS)
+            loss_g = -torch.mean(self.C(sr)) + self.alpha * torch.mean(crps)
+            
             go_downhill(self, loss_g, g_opt)
 
         self.log_dict(

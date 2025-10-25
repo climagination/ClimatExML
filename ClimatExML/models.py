@@ -274,7 +274,6 @@ class HRStreamGenerator(nn.Module):
         self.upsampling = nn.Sequential(*upsample_layers)
         # Final output block
         self.conv3 = nn.Sequential(
-            # nn.Conv2d(filters * 2, filters + 1, kernel_size=3, stride=1, padding=1),
             nn.Conv2d(filters * 2, filters + 1, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(),
             nn.Conv2d(filters + 1, n_predictands, kernel_size=3, stride=1, padding=1),
@@ -286,7 +285,8 @@ class HRStreamGenerator(nn.Module):
         out = self.LR_pre(x_coarse)  ## LR branch
         outc = self.upsampling(out)
         outf = self.HR_pre(x_fine)  ## HR branch
-        out = torch.cat((outc, outf), 1)  ##combine
+        # print("outc shape:",outc.shape, "outf shape:", outf.shape) added as part of debugging
+        out = torch.cat((outc, outf), 1)  ##combine # was breaking on this line until batch size was changed to 4 in config.yaml
         out = self.conv3(out)
         # This precip threshold represents the 0 point in standardized space
         # based on my calculation --- this value is the negative of the mean of

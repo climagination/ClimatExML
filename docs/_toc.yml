@@ -11,4 +11,15 @@ chapters:
 - file: customizing
 - file: infering
 - file: performance
+- file: hpc/index.md
+  title: HPC Deployment Guide
+  sections:
+    - file: hpc/drac-setup
+      title: Environment Setup
+    - file: hpc/drac-interactive
+      title: Interactive Sessions
+    - file: hpc/drac-batch
+      title: Batch Jobs
+    - file: hpc/drac-optimization
+      title: Optimization
 - file: build_docs

@@ -32,7 +32,7 @@ salloc --time=02:05:00 \
 -   `--gres=gpu:h100:1`: Request 1 H100 GPU
 -   `--mail-type=BEGIN`: Email notification when allocation is ready
 
-Extra DRAC documentation can be found [here].(https://docs.alliancecan.ca/wiki/Running_jobs#Interactive_jobs)
+Extra DRAC documentation can be found [here](https://docs.alliancecan.ca/wiki/Running_jobs#Interactive_jobs).
 
 ::: {note} **Allocation wait times** vary from 1 minute to 10+ hours depending on requested resources and cluster availability. The email notification (`--mail-type=BEGIN`) is helpful for longer waits.
 :::

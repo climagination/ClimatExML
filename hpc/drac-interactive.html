@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Interactive Sessions on DRAC &#8212; ClimatEx Statistical Downscaling</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'hpc/drac-interactive';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Batch Job Submission" href="drac-batch.html" />
+    <link rel="prev" title="Deploying on DRAC HPC Clusters" href="drac-setup.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/climatex.png" class="logo__image only-light" alt="ClimatEx Statistical Downscaling - Home"/>
+    <script>document.write(`<img src="../_static/climatex.png" class="logo__image only-dark" alt="ClimatEx Statistical Downscaling - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    ClimatExML Documentation
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installing.html">Installing ClimatExML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tracking.html">Tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../customizing.html">Customize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../infering.html">Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">HPC Deployment Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="drac-setup.html">Environment Setup</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Interactive Sessions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="drac-batch.html">Batch Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="drac-optimization.html">Optimization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../build_docs.html">How to build docs</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/nannau/ClimatExML" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/nannau/ClimatExML/issues/new?title=Issue%20on%20page%20%2Fhpc/drac-interactive.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/hpc/drac-interactive.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Interactive Sessions on DRAC</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requesting-an-interactive-session">Requesting an Interactive Session</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-allocation-status">Checking Allocation Status</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connecting-to-your-allocation">Connecting to Your Allocation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-your-environment">Setting Up Your Environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#verifying-gpu-access">Verifying GPU Access</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging-with-data">Debugging with Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-1-using-synthetic-data-recommended-for-quick-testing">Option 1: Using Synthetic Data (Recommended for Quick Testing)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-2-using-real-data">Option 2: Using Real Data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging-your-code">Debugging Your Code</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exiting-the-session">Exiting the Session</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#canceling-an-allocation">Canceling an Allocation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-interactive-session-workflow">Common Interactive Session Workflow</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="interactive-sessions-on-drac">
+<h1>Interactive Sessions on DRAC<a class="headerlink" href="#interactive-sessions-on-drac" title="Link to this heading">#</a></h1>
+<p><strong>Tested on:</strong> Nibi cluster<br />
+<strong>Last updated:</strong> October 2025</p>
+<p>Interactive sessions allow you to debug and test your code on a compute node before submitting larger batch jobs. This is similar to working on a lab machine (like Tars or Thufir), but on DRAC’s compute infrastructure.</p>
+<section id="requesting-an-interactive-session">
+<h2>Requesting an Interactive Session<a class="headerlink" href="#requesting-an-interactive-session" title="Link to this heading">#</a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">salloc</span></code> to request resources:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>salloc<span class="w"> </span>--time<span class="o">=</span><span class="m">02</span>:05:00<span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--mem<span class="o">=</span>50G<span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--ntasks<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--cpus-per-task<span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--account<span class="o">=</span>def-monahana<span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--job-name<span class="o">=</span>gpu_interactive<span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--gres<span class="o">=</span>gpu:h100:1<span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--mail-user<span class="o">=</span>sbeairsto@uvic.ca<span class="w"> </span><span class="se">\</span>
+<span class="w">       </span>--mail-type<span class="o">=</span>BEGIN
+</pre></div>
+</div>
+<p><strong>Parameters explained:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--time</span></code>: Maximum session duration (HH:MM</p>
+<p>format)</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--mem</span></code>: RAM allocation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cpus-per-task</span></code>: Number of CPU cores</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--account</span></code>: Your PI’s allocation account</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--gres=gpu:h100:1</span></code>: Request 1 H100 GPU</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--mail-type=BEGIN</span></code>: Email notification when allocation is ready</p></li>
+</ul>
+<p>Extra DRAC documentation can be found [here].(<a class="reference external" href="https://docs.alliancecan.ca/wiki/Running_jobs#Interactive_jobs">https://docs.alliancecan.ca/wiki/Running_jobs#Interactive_jobs</a>)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Allocation wait times</strong> vary from 1 minute to 10+ hours depending on requested resources and cluster availability. The email notification (<code class="docutils literal notranslate"><span class="pre">--mail-type=BEGIN</span></code>) is helpful for longer waits.</p>
+</div>
+</section>
+<section id="checking-allocation-status">
+<h2>Checking Allocation Status<a class="headerlink" href="#checking-allocation-status" title="Link to this heading">#</a></h2>
+<p>While waiting for your allocation, you can check its status:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check your pending/running jobs</span>
+squeue<span class="w"> </span>-u<span class="w"> </span><span class="nv">$USER</span>
+
+<span class="c1"># Output shows job ID, status, and remaining time</span>
+</pre></div>
+</div>
+</section>
+<section id="connecting-to-your-allocation">
+<h2>Connecting to Your Allocation<a class="headerlink" href="#connecting-to-your-allocation" title="Link to this heading">#</a></h2>
+<p>Once your allocation is granted, attach to the compute node:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun<span class="w"> </span>--pty<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>You’ll now have an interactive shell on the allocated compute node with access to the requested GPU.</p>
+</section>
+<section id="setting-up-your-environment">
+<h2>Setting Up Your Environment<a class="headerlink" href="#setting-up-your-environment" title="Link to this heading">#</a></h2>
+<p>Before running any GPU code, load the required modules:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>purge
+module<span class="w"> </span>load<span class="w"> </span>cuda/12.9
+<span class="nb">source</span><span class="w"> </span>/path/to/your/climatexvenv/bin/activate
+</pre></div>
+</div>
+</section>
+<section id="verifying-gpu-access">
+<h2>Verifying GPU Access<a class="headerlink" href="#verifying-gpu-access" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check GPU is available</span>
+nvidia-smi
+
+<span class="c1"># Test PyTorch GPU access</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(f&#39;CUDA available: {torch.cuda.is_available()}&#39;)&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="debugging-with-data">
+<h2>Debugging with Data<a class="headerlink" href="#debugging-with-data" title="Link to this heading">#</a></h2>
+<section id="option-1-using-synthetic-data-recommended-for-quick-testing">
+<h3>Option 1: Using Synthetic Data (Recommended for Quick Testing)<a class="headerlink" href="#option-1-using-synthetic-data-recommended-for-quick-testing" title="Link to this heading">#</a></h3>
+<p>For rapid debugging without the overhead of copying and unpacking large datasets, use the synthetic data loader:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># In your training script or config</span>
+<span class="n">use_synthetic_data</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Enable synthetic data mode</span>
+</pre></div>
+</div>
+<p>This allows you to test your training loop, GPU utilization, and code logic without data I/O delays.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The synthetic data loader will be added to the main branch soon. It generates random data matching your dataset’s dimensions, perfect for debugging before running full-scale experiments.</p>
+</div>
+</section>
+<section id="option-2-using-real-data">
+<h3>Option 2: Using Real Data<a class="headerlink" href="#option-2-using-real-data" title="Link to this heading">#</a></h3>
+<p>If you need to debug with actual data:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copy data to fast local storage</span>
+cp<span class="w"> </span>/path/to/my/dataset.tar.gz<span class="w"> </span><span class="nv">$SLURM_TMPDIR</span>/
+
+<span class="c1"># Extract (this can be slow for large files)</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span><span class="nv">$SLURM_TMPDIR</span>/dataset.tar.gz<span class="w"> </span>-C<span class="w"> </span><span class="nv">$SLURM_TMPDIR</span>/
+
+<span class="c1"># Update your data path</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">DATA_PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$SLURM_TMPDIR</span><span class="s2">/dataset&quot;</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For large datasets, copying and unpacking to <code class="docutils literal notranslate"><span class="pre">$SLURM_TMPDIR</span></code> can take significant time. Use synthetic data for initial debugging, then test with real data once your code is working.</p>
+</div>
+</section>
+</section>
+<section id="debugging-your-code">
+<h2>Debugging Your Code<a class="headerlink" href="#debugging-your-code" title="Link to this heading">#</a></h2>
+<p>Now you can run and debug your code interactively:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test your training script</span>
+python<span class="w"> </span>ClimatExML/train.py<span class="w"> </span>--debug
+
+<span class="c1"># Run Python interactively</span>
+python
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>torch
+&gt;&gt;&gt;<span class="w"> </span><span class="c1"># debug as needed</span>
+</pre></div>
+</div>
+</section>
+<section id="exiting-the-session">
+<h2>Exiting the Session<a class="headerlink" href="#exiting-the-session" title="Link to this heading">#</a></h2>
+<p>When you’re done debugging:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Exit the interactive shell</span>
+<span class="nb">exit</span>
+
+<span class="c1"># This will release your allocation` </span>
+</pre></div>
+</div>
+<p>The session will also automatically end when the time limit is reached.</p>
+</section>
+<section id="canceling-an-allocation">
+<h2>Canceling an Allocation<a class="headerlink" href="#canceling-an-allocation" title="Link to this heading">#</a></h2>
+<p>If you realize you requested the wrong resources or no longer need the allocation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cancel by job ID (find ID with squeue -u $USER)</span>
+scancel<span class="w"> </span>JOBID
+
+<span class="c1"># Cancel all your jobs</span>
+scancel<span class="w"> </span>-u<span class="w"> </span><span class="nv">$USER</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><strong>Best practice:</strong> Request slightly more time than you think you’ll need. If your session times out while debugging, you’ll lose your work and need to request a new allocation.</p>
+</div>
+</section>
+<section id="common-interactive-session-workflow">
+<h2>Common Interactive Session Workflow<a class="headerlink" href="#common-interactive-session-workflow" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Request allocation with  <code class="docutils literal notranslate"><span class="pre">salloc</span></code></p></li>
+<li><p>Wait for email notification (or check with  <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">-u</span> <span class="pre">$USER</span></code>)</p></li>
+<li><p>Connect with  <code class="docutils literal notranslate"><span class="pre">srun</span> <span class="pre">--pty</span> <span class="pre">bash</span></code></p></li>
+<li><p>Load modules and activate environment</p></li>
+<li><p>Test and debug your code</p></li>
+<li><p>Exit when done</p></li>
+</ol>
+<p>This workflow helps you catch errors before submitting long-running batch jobs.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./hpc"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="drac-setup.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Deploying on DRAC HPC Clusters</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="drac-batch.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Batch Job Submission</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requesting-an-interactive-session">Requesting an Interactive Session</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-allocation-status">Checking Allocation Status</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connecting-to-your-allocation">Connecting to Your Allocation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-your-environment">Setting Up Your Environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#verifying-gpu-access">Verifying GPU Access</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging-with-data">Debugging with Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-1-using-synthetic-data-recommended-for-quick-testing">Option 1: Using Synthetic Data (Recommended for Quick Testing)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-2-using-real-data">Option 2: Using Real Data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging-your-code">Debugging Your Code</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exiting-the-session">Exiting the Session</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#canceling-an-allocation">Canceling an Allocation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-interactive-session-workflow">Common Interactive Session Workflow</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Nic Annau
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

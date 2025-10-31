@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Performance Optimization on DRAC &#8212; ClimatEx Statistical Downscaling</title>
+    <title>Performance and Optimization &#8212; ClimatEx Statistical Downscaling</title>
   
   
   
@@ -191,7 +191,13 @@
 <li class="toctree-l2"><a class="reference internal" href="drac-setup.html">Environment Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="drac-interactive.html">Interactive Sessions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="drac-batch.html">Batch Jobs</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Optimization</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Performance and Optimization</a></li>
+
+
+
+
+
+
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../build_docs.html">How to build docs</a></li>
@@ -380,7 +386,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Performance Optimization on DRAC</h1>
+    <h1>Performance and Optimization</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -390,10 +396,40 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-loading">Data Loading</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-utilization">GPU Utilization</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-management">Memory Management</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Performance and Optimization</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optimization-workflow">Optimization Workflow</a></li>
 </ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#key-performance-metrics">Key Performance Metrics</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-memory-usage">GPU Memory Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-power-usage">GPU Power Usage</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#tuning-parameters">Tuning Parameters</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batch-size">Batch Size</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#precision-mode">Precision Mode</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#number-of-workers">Number of Workers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataloader-optimizations">DataLoader Optimizations</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring-performance">Monitoring Performance</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#during-training-real-time">During Training (Real-time)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#after-training">After Training</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#common-performance-issues">Common Performance Issues</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issue-low-gpu-utilization-50">Issue: Low GPU Utilization (&lt;50%)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issue-gpu-memory-oom">Issue: GPU Memory OOM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issue-data-loading-bottleneck">Issue: Data Loading Bottleneck</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#optimal-configuration-for-nibi-h100s">Optimal Configuration for Nibi H100s</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking-checklist">Benchmarking Checklist</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-resources">Additional Resources</a></li>
+</ul>
+
             </nav>
         </div>
     </div>
@@ -404,20 +440,284 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="performance-optimization-on-drac">
-<h1>Performance Optimization on DRAC<a class="headerlink" href="#performance-optimization-on-drac" title="Link to this heading">#</a></h1>
-<section id="data-loading">
-<h2>Data Loading<a class="headerlink" href="#data-loading" title="Link to this heading">#</a></h2>
-<p>…</p>
+  <section id="performance-and-optimization">
+<h1>Performance and Optimization<a class="headerlink" href="#performance-and-optimization" title="Link to this heading">#</a></h1>
+<p><strong>Tested on:</strong> Nibi cluster (H100 GPUs)
+<strong>Last updated:</strong> October 2025</p>
+<p>Optimizing your training performance on DRAC ensures efficient use of compute resources and faster experiment iteration. This section covers key metrics to monitor and parameters to tune for H100 GPUs on Nibi.</p>
+<section id="optimization-workflow">
+<h2>Optimization Workflow<a class="headerlink" href="#optimization-workflow" title="Link to this heading">#</a></h2>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><strong>Use interactive sessions for optimization.</strong> Request a GPU allocation (see <a class="reference internal" href="#interactive.md"><span class="xref myst">Interactive Sessions</span></a>) and use the synthetic data loader to quickly iterate on performance tuning without waiting for data transfer.</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Request interactive session for optimization</span>
+salloc<span class="w"> </span>--time<span class="o">=</span><span class="m">02</span>:00:00<span class="w"> </span>--mem<span class="o">=</span>80G<span class="w"> </span>--cpus-per-task<span class="o">=</span><span class="m">8</span><span class="se">\</span>
+--account<span class="o">=</span>def-yourpi<span class="w"> </span>--gres<span class="o">=</span>gpu:h100:1
+
+<span class="c1"># Connect and setup</span>
+srun<span class="w"> </span>--pty<span class="w"> </span>bash
+module<span class="w"> </span>purge
+module<span class="w"> </span>load<span class="w"> </span>cuda/12.9
+<span class="nb">source</span><span class="w"> </span>/path/to/climatexvenv/bin/activate
+
+<span class="c1"># Run training with synthetic data for quick testing</span>
+python<span class="w"> </span>train.py<span class="w"> </span>--use_synthetic_data
+</pre></div>
+</div>
 </section>
-<section id="gpu-utilization">
-<h2>GPU Utilization<a class="headerlink" href="#gpu-utilization" title="Link to this heading">#</a></h2>
-<p>…</p>
 </section>
-<section id="memory-management">
-<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading">#</a></h2>
-<p>…</p>
+<section id="key-performance-metrics">
+<h1>Key Performance Metrics<a class="headerlink" href="#key-performance-metrics" title="Link to this heading">#</a></h1>
+<section id="gpu-memory-usage">
+<h2>GPU Memory Usage<a class="headerlink" href="#gpu-memory-usage" title="Link to this heading">#</a></h2>
+<p><strong>Target:</strong> ~90% of available VRAM (72GB of 80GB on H100)</p>
+<p>This metric shows how much GPU memory is allocated. Monitor this in Comet (see <span class="xref std std-doc">tracking</span> for setup) under “GPU memory usage.”</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Do not confuse with “GPU memory utilization”</strong> - that measures how much of the allocated memory is actively being used at any given moment, not total allocation.</p>
+</div>
+<p><strong>How to optimize:</strong></p>
+<ul class="simple">
+<li><p>Increase batch size if usage is low (&lt;70%)</p></li>
+<li><p>Decrease batch size if hitting OOM errors</p></li>
+<li><p>Use powers of 2 for batch sizes: 4, 8, 16, 32, 64, 96, 128…</p></li>
+</ul>
+<p><strong>Recommended starting point:</strong> Batch size of 96 works well for typical ClimatExML models.</p>
 </section>
+<section id="gpu-power-usage">
+<h2>GPU Power Usage<a class="headerlink" href="#gpu-power-usage" title="Link to this heading">#</a></h2>
+<p><strong>Target:</strong> 550-650W average during training</p>
+<p>Monitor power draw in Comet or with <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code>. Lower power usage may indicate the GPU is not being fully utilized.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor power in real-time during interactive session</span>
+watch<span class="w"> </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span>nvidia-smi
+</pre></div>
+</div>
+<p>Look for the “Power Draw / Cap” column - you want to see consistent usage in the 550-650W range.</p>
+<p><strong>Low power usage (&lt;500W) may indicate:</strong></p>
+<ul class="simple">
+<li><p>Data loading bottleneck (GPU waiting for data)</p></li>
+<li><p>Insufficient batch size</p></li>
+<li><p>Too few DataLoader workers</p></li>
+</ul>
+</section>
+</section>
+<section id="tuning-parameters">
+<h1>Tuning Parameters<a class="headerlink" href="#tuning-parameters" title="Link to this heading">#</a></h1>
+<section id="batch-size">
+<h2>Batch Size<a class="headerlink" href="#batch-size" title="Link to this heading">#</a></h2>
+<p>Batch size has the largest impact on GPU memory usage and training speed.</p>
+<p><strong>Finding optimal batch size:</strong></p>
+<ol class="arabic simple">
+<li><p>Start with a power of 2 (e.g., 32)</p></li>
+<li><p>Monitor GPU memory usage in Comet or  <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code></p></li>
+<li><p>Increase incrementally: 32 → 64 → 96 → 128</p></li>
+<li><p>Stop when you reach ~90% memory usage or hit OOM</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># In your training config</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">96</span>  <span class="c1"># Good starting point for H100</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>CRPS Loss Considerations:</strong> If using CRPS-based loss functions with multiple realizations per batch member, you’ll need to reduce batch size accordingly to stay within memory limits.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Batch size increases are not linear with memory usage. Trial and error is necessary to find the sweet spot.</p>
+</div>
+</section>
+<section id="precision-mode">
+<h2>Precision Mode<a class="headerlink" href="#precision-mode" title="Link to this heading">#</a></h2>
+<p>H100 GPUs are optimized for bfloat16 (bf16) computation and should use bf16 instead of the default mixed precision (fp16).</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="c1"># In config.yaml</span>
+<span class="w"> </span><span class="nt">precision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bf16-mixed</span><span class="w"> </span><span class="c1"># Use bf16, not 16-mixed (fp16)</span>
+</pre></div>
+</div>
+<p>See <span class="xref std std-doc">customizing</span> for full configuration details.</p>
+<p><strong>Benefits on H100:</strong></p>
+<ul class="simple">
+<li><p>~2x training speedup vs fp32</p></li>
+<li><p>More stable than fp16 (wider dynamic range)</p></li>
+<li><p>Optimized for H100 Tensor Cores</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Default mixed precision uses fp16. Always explicitly set <code class="docutils literal notranslate"><span class="pre">bf16-mixed</span></code> for H100s.</p>
+</div>
+</section>
+<section id="number-of-workers">
+<h2>Number of Workers<a class="headerlink" href="#number-of-workers" title="Link to this heading">#</a></h2>
+<p>DataLoader workers handle data loading in parallel. Match this to your CPU allocation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># In your DataLoader configuration</span>
+<span class="n">num_workers</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># Match --cpus-per-task in SLURM script</span>
+<span class="err">`</span> <span class="err">``</span>
+
+<span class="err">```</span> <span class="n">bash</span>
+<span class="c1"># In your SLURM script</span>
+<span class="c1">#SBATCH --cpus-per-task=8  # Should match num_workers` </span>
+</pre></div>
+</div>
+<p><strong>Guidelines:</strong></p>
+<ul class="simple">
+<li><p>Start with  <code class="docutils literal notranslate"><span class="pre">num_workers</span> <span class="pre">=</span> <span class="pre">cpus-per-task</span></code></p></li>
+<li><p>Too few workers: GPU waits for data (low power usage)</p></li>
+<li><p>Too many workers: Overhead from context switching</p></li>
+</ul>
+</section>
+<section id="dataloader-optimizations">
+<h2>DataLoader Optimizations<a class="headerlink" href="#dataloader-optimizations" title="Link to this heading">#</a></h2>
+<p>Several PyTorch DataLoader options can significantly improve performance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">96</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>           <span class="c1"># Faster CPU-to-GPU transfer</span>
+    <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>    <span class="c1"># Keep workers alive between epochs</span>
+    <span class="n">prefetch_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>         <span class="c1"># Pre-load 4 batches per worker</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Key parameters:</strong></p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">pin_memory=True</span></code></strong>: Enables faster data transfer to GPU (recommended for CUDA)</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">persistent_workers=True</span></code></strong>: Avoids worker restart overhead between epochs</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">prefetch_factor=4</span></code></strong>: Number of batches each worker pre-loads</p></li>
+</ul>
+</section>
+</section>
+<section id="monitoring-performance">
+<h1>Monitoring Performance<a class="headerlink" href="#monitoring-performance" title="Link to this heading">#</a></h1>
+<section id="during-training-real-time">
+<h2>During Training (Real-time)<a class="headerlink" href="#during-training-real-time" title="Link to this heading">#</a></h2>
+<p><strong>Option 1: Comet Dashboard</strong></p>
+<p>Comet automatically tracks GPU metrics in real-time. See <span class="xref std std-doc">tracking</span> for setup instructions.</p>
+<p>Key metrics to watch:</p>
+<ul class="simple">
+<li><p>GPU memory usage (target: ~90%)</p></li>
+<li><p>GPU power draw (target: 550-650W)</p></li>
+<li><p>Training throughput (samples/sec)</p></li>
+</ul>
+<p><strong>Option 2: nvidia-smi (Interactive Sessions)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># In an interactive session, SSH to your compute node</span>
+watch<span class="w"> </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span>nvidia-smi
+
+<span class="c1"># Look for:</span>
+<span class="c1"># - Memory-Usage: should be ~72000MiB / 81920MiB (90%)</span>
+<span class="c1"># - Power Draw: should be 550-650W</span>
+<span class="c1"># - GPU-Util: should be high (&gt;80%)</span>
+</pre></div>
+</div>
+</section>
+<section id="after-training">
+<h2>After Training<a class="headerlink" href="#after-training" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check job efficiency</span>
+seff<span class="w"> </span>JOBID
+
+<span class="c1"># Shows:</span>
+<span class="c1"># - CPU efficiency</span>
+<span class="c1"># - Memory efficiency </span>
+<span class="c1"># - Job duration` </span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="common-performance-issues">
+<h1>Common Performance Issues<a class="headerlink" href="#common-performance-issues" title="Link to this heading">#</a></h1>
+<section id="issue-low-gpu-utilization-50">
+<h2>Issue: Low GPU Utilization (&lt;50%)<a class="headerlink" href="#issue-low-gpu-utilization-50" title="Link to this heading">#</a></h2>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>Low power usage (&lt;400W)</p></li>
+<li><p>Low GPU utilization percentage</p></li>
+<li><p>Slow training</p></li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol class="arabic simple">
+<li><p>Increase batch size</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">bf16-mixed</span></code> precision</p></li>
+<li><p>Increase  <code class="docutils literal notranslate"><span class="pre">num_workers</span></code>  in DataLoader</p></li>
+<li><p>Enable DataLoader optimizations (<code class="docutils literal notranslate"><span class="pre">pin_memory</span></code>,  <code class="docutils literal notranslate"><span class="pre">persistent_workers</span></code>)</p></li>
+<li><p>Verify data is in  <code class="docutils literal notranslate"><span class="pre">$SLURM_TMPDIR</span></code>  (not reading from network storage)</p></li>
+</ol>
+</section>
+<section id="issue-gpu-memory-oom">
+<h2>Issue: GPU Memory OOM<a class="headerlink" href="#issue-gpu-memory-oom" title="Link to this heading">#</a></h2>
+<p><strong>Symptoms:</strong></p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="err">`</span><span class="n">RuntimeError</span><span class="p">:</span><span class="w"> </span><span class="n">CUDA</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">memory</span><span class="err">`</span><span class="w"> </span>
+</pre></div>
+</div>
+<p><strong>Solutions:</strong></p>
+<ol class="arabic simple">
+<li><p>Reduce batch size</p></li>
+</ol>
+</section>
+<section id="issue-data-loading-bottleneck">
+<h2>Issue: Data Loading Bottleneck<a class="headerlink" href="#issue-data-loading-bottleneck" title="Link to this heading">#</a></h2>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>Low GPU utilization despite reasonable batch size</p></li>
+<li><p>High CPU usage</p></li>
+<li><p>Training speed doesn’t improve with more workers</p></li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol class="arabic simple">
+<li><p>Verify data is in  <code class="docutils literal notranslate"><span class="pre">$SLURM_TMPDIR</span></code>, not network storage</p></li>
+<li><p>Use synthetic data loader to test if data I/O is the bottleneck</p></li>
+</ol>
+</section>
+</section>
+<section id="optimal-configuration-for-nibi-h100s">
+<h1>Optimal Configuration for Nibi H100s<a class="headerlink" href="#optimal-configuration-for-nibi-h100s" title="Link to this heading">#</a></h1>
+<p>Based on testing, these settings work well for typical ClimatExML training:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="sb">`</span><span class="c1"># SLURM settings</span>
+<span class="c1">#SBATCH --gres=gpu:h100:1</span>
+<span class="c1">#SBATCH --cpus-per-task=8</span>
+<span class="c1">#SBATCH --mem=80G` </span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># DataLoader settings</span>
+<span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">96</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">prefetch_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Expected performance:</strong></p>
+<ul class="simple">
+<li><p>GPU memory usage: ~72GB / 80GB (90%)</p></li>
+<li><p>Power draw: 550-650W average</p></li>
+<li><p>GPU utilization: &gt;80%</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>These are starting points. Your optimal settings may vary depending on model architecture, input data size, and loss function. Always benchmark with your specific configuration.</p>
+</div>
+<section id="benchmarking-checklist">
+<h2>Benchmarking Checklist<a class="headerlink" href="#benchmarking-checklist" title="Link to this heading">#</a></h2>
+<p>Before running long training jobs:</p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test with synthetic data loader in interactive session</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Verify GPU memory usage is ~90%</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Check power draw is 550-650W</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Confirm no data loading bottlenecks</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Validate DataLoader settings match CPU allocation</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Monitor first few epochs in Comet dashboard</p></li>
+</ul>
+</section>
+</section>
+<section id="additional-resources">
+<h1>Additional Resources<a class="headerlink" href="#additional-resources" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p><span class="xref std std-doc">../trackingtracking</span>  - Setting up Comet for metric tracking</p></li>
+<li><p><a class="reference internal" href="drac-interactive.html"><span class="doc">Interactive Sessions on DRAC</span></a>  - Using interactive sessions for optimization</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/data.html">PyTorch DataLoader Documentation</a></p></li>
+<li><p><a class="reference external" href="https://docs.nvidia.com/deeplearning/performance/">NVIDIA GPU Performance Guide</a></p></li>
+</ul>
 </section>
 
     <script type="text/x-thebe-config">
@@ -484,10 +784,40 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-loading">Data Loading</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-utilization">GPU Utilization</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-management">Memory Management</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Performance and Optimization</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optimization-workflow">Optimization Workflow</a></li>
 </ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#key-performance-metrics">Key Performance Metrics</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-memory-usage">GPU Memory Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-power-usage">GPU Power Usage</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#tuning-parameters">Tuning Parameters</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batch-size">Batch Size</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#precision-mode">Precision Mode</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#number-of-workers">Number of Workers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataloader-optimizations">DataLoader Optimizations</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring-performance">Monitoring Performance</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#during-training-real-time">During Training (Real-time)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#after-training">After Training</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#common-performance-issues">Common Performance Issues</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issue-low-gpu-utilization-50">Issue: Low GPU Utilization (&lt;50%)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issue-gpu-memory-oom">Issue: GPU Memory OOM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#issue-data-loading-bottleneck">Issue: Data Loading Bottleneck</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#optimal-configuration-for-nibi-h100s">Optimal Configuration for Nibi H100s</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking-checklist">Benchmarking Checklist</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-resources">Additional Resources</a></li>
+</ul>
+
   </nav></div>
 
 </div></div>

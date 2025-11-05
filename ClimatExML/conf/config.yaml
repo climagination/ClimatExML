@@ -13,6 +13,7 @@ hyperparameters:
   max_epochs: 50
   noise_injection: True
   batch_size: 4
+  n_realizations: 4
 
 tracking:
   # set COMET_API_KEY environment variable for online mode

@@ -1,5 +1,6 @@
 # Plots matplotlib grids and saves to file
 import torch
+import time
 
 # import matplotlib.pyplot as plt
 import torchvision
@@ -29,7 +30,7 @@ def gen_grid_images(
     """
 
     batch_size = lr.size(0)
-    prng = RandomState(1234567890)
+    prng = RandomState(int(time.time()))
 
     random = prng.randint(0, batch_size, size=(n_examples,))
 
@@ -38,12 +39,9 @@ def gen_grid_images(
     else:
         sr = G(lr[random, ...]).detach()
 
-    lr_grid = torchvision.utils.make_grid(lr[random, ...], nrow=n_examples, padding=5)[
-        var, ...
-    ]
-    sr_grid = torchvision.utils.make_grid(sr, nrow=n_examples)[var, ...]
-
-    hr_grid = torchvision.utils.make_grid(hr[random, ...], nrow=n_examples)[var, ...]
+    lr_grid = torchvision.utils.make_grid(lr[random, var:var+1, ...], nrow=n_examples, padding=5)[0, ...]
+    sr_grid = torchvision.utils.make_grid(sr[:, var:var+1, ...], nrow=n_examples)[0, ...]
+    hr_grid = torchvision.utils.make_grid(hr[random, var:var+1, ...], nrow=n_examples)[0, ...]
 
     fig.suptitle("Training Samples")
 

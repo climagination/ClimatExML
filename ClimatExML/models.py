@@ -276,7 +276,7 @@ class HRStreamGenerator(nn.Module):
         self.conv3 = nn.Sequential(
             # nn.Conv2d(filters * 2, filters + 1, kernel_size=3, stride=1, padding=1),
             nn.Conv2d(filters * 2, filters + 1, kernel_size=3, stride=1, padding=1),
-            ResidualInResidualDenseBlock(filters + 1, noise, resolution=fine_dims),
+            # ResidualInResidualDenseBlock(filters + 1, noise, resolution=fine_dims), # this layer causes "bubble" artifacts
             nn.LeakyReLU(),
             nn.Conv2d(filters + 1, n_predictands, kernel_size=3, stride=1, padding=1),
         )

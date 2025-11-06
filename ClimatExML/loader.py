@@ -17,6 +17,60 @@ def extract_dates_from_string(input_string):
     return dates
 
 
+def _get_zero_fraction(tensor):
+    num_zeros = int((tensor == 0).sum().item())
+    num_elements = tensor.numel()
+    return num_zeros / num_elements
+
+
+def _get_dates_with_too_many_zeroes(path_list, threshold):
+    '''
+    Iterates through all HR data file paths to find those with too many zeroes.
+    Returns a list of dates (strings) that have a fraction of zeroes
+    greater than the specified threshold.
+    '''
+    dates_with_too_many_zeroes = []
+    for i, path in enumerate(path_list):
+        if (i + 1) % 100 == 0:
+            print(f"Processing file {i+1}/{len(path_list)} ({(i + 1) / len(path_list) * 100:.2f}%): {path}")
+
+        tensor = torch.load(path)
+        if _get_zero_fraction(tensor) > threshold:
+            dates_with_too_many_zeroes.append(path[-16:-3])
+
+    return dates_with_too_many_zeroes
+
+
+def filter_by_list_of_dates(paths, list_of_bad_dates):
+
+    filtered_paths = []
+    for path_group in paths:
+        filtered_group = []
+        for path in path_group:
+            dates = extract_dates_from_string(path)
+            if dates:
+                if dates[0] not in list_of_bad_dates:
+                    filtered_group.append(path)
+        filtered_paths.append(filtered_group)
+    return filtered_paths
+
+
+def filter_by_month(paths, months=[1, 2, 3, 12]):
+    # Removes data samples that come from user-specified months
+    filtered_paths = []
+    for path_group in paths:
+        filtered_group = []
+        for path in path_group:
+            dates = extract_dates_from_string(path)
+            if dates:
+                # Extract the month from the date string
+                month = int(dates[0].split("-")[1])
+                if month not in months:
+                    filtered_group.append(path)
+        filtered_paths.append(filtered_group)
+    return filtered_paths
+
+
 class ClimatExSampler(Dataset):
     lr_paths: list
     hr_paths: list
@@ -27,8 +81,23 @@ class ClimatExSampler(Dataset):
         self, lr_paths, hr_paths, hr_invariant_paths, lr_invariant_paths
     ) -> None:
         super().__init__()
+
+        # Check the first HR variable (your main predictand) for bad dates
+        # bad_dates = _get_dates_with_too_many_zeroes(hr_paths[0], threshold=0.5)
+
+        # Filter both LR and HR paths
+        # print(f"Filtering out {len(bad_dates)} dates with too many zeros")
+        # self.lr_paths = filter_by_list_of_dates(lr_paths, bad_dates)
+        # self.hr_paths = filter_by_list_of_dates(hr_paths, bad_dates)
         self.lr_paths = lr_paths
         self.hr_paths = hr_paths
+
+        # Verify all variables have same length after filtering
+        assert len(set(len(paths) for paths in self.lr_paths)) == 1, \
+            "LR variables have mismatched lengths after filtering"
+        assert len(set(len(paths) for paths in self.hr_paths)) == 1, \
+            "HR variables have mismatched lengths after filtering"
+
         self.hr_invariant_paths = hr_invariant_paths
         self.lr_invariant_paths = lr_invariant_paths
 

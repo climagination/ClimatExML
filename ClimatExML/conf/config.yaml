@@ -8,11 +8,11 @@ hyperparameters:
   b1: 0.9
   b2: 0.99
   gp_lambda: 10
-  alpha: 50.0
+  alpha: 500.0
   n_critic: 5
   max_epochs: 50
   noise_injection: false # experimental
-  batch_size: 3
+  batch_size: 16
 
 tracking:
   # set COMET_API_KEY environment variable for online mode

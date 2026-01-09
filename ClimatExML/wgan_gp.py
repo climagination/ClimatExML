@@ -97,7 +97,7 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         if (batch_idx + 1) % self.n_critic == 0:
             self.toggle_optimizer(g_opt)
             sr = self.G(lr, hr_cov)
-            loss_g = -torch.mean(self.C(sr).detach()) + self.alpha * mean_squared_error(sr, hr)
+            loss_g = -torch.mean(self.C(sr)) + self.alpha * mean_squared_error(sr, hr)
             go_downhill(self, loss_g, g_opt)
 
         self.log_dict(

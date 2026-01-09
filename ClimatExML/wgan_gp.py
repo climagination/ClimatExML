@@ -109,7 +109,7 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
             crps = torch.cat(crps_ls)
 
             loss_g = (
-                -torch.mean(self.C(sr).detach())
+                -torch.mean(self.C(sr))
                 + self.alpha * torch.mean(crps)
             )
 

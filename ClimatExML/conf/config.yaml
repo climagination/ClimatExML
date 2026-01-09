@@ -2,33 +2,33 @@
 trainer: wgan
 resume_from_checkpoint: null
 
-hyperparameters:
+hyperparameters: 
   # Adam Optimizer
-  learning_rate: 0.00025
+  learning_rate: 0.00005
   b1: 0.9
   b2: 0.99
   gp_lambda: 10
-  alpha: 50.0
+  alpha: 500.0
   n_critic: 5
-  max_epochs: 50
-  noise_injection: false # experimental
-  batch_size: 4
+  max_epochs: 201
+  noise_injection: True # experimental
+  batch_size: 16
 
 tracking:
   # set COMET_API_KEY environment variable for online mode
-  project_name: test_updated_crps
+  project_name: test-updated-crps
   workspace: nadiyashore
   save_dir: ${oc.env:OUTPUT_COMET_ZIP}
-  experiment_name: test_updated_crps_128_1_a
+  experiment_name: tas_detach_rmv_200_1
   log_model: True
   log_every_n_steps: 100
   validation_log_every_n_steps: 500
 
 hardware:
   num_workers: 0 # modify for cpu requested on SLURM, typically I use 11
-  precision: 16-mixed # 16-mixed is unstable, use 32 if memory allows
+  precision: bf16-mixed # 16-mixed is unstable, use 32 if memory allows
   accelerator: "gpu"
-  devices: [0]
+  devices: [1]
   strategy: "auto" # user "ddp_find_unused_parameters_true" for SLURM
 
 invariant:
@@ -46,18 +46,23 @@ invariant:
     - 128
     - 128
   hr_invariant_paths: 
+    # - /home/nadiyashore/data/topo/hr_topography_norm_128.pt
     - /home/nadiyashore/data/topo/hr_topography_norm_128.pt
+    # - /home/nadiyashore/data/invariants/land_mask_128.pt
   lr_invariant_paths:
+    # - /home/nadiyashore/data/topo/lr_topography_norm_128.pt
     - /home/nadiyashore/data/topo/lr_topography_norm_128.pt
 
 train_data:
   _target_: "ClimatExML.mlclasses.InputVariables"
   lr_paths:
+    # - ${oc.env:DATA_DIR}/train/pr/lr/*.pt
     - ${oc.env:DATA_DIR}/train/tas/lr/*.pt
     - ${oc.env:DATA_DIR}/train/uas/lr/*.pt
     - ${oc.env:DATA_DIR}/train/vas/lr/*.pt
     - ${oc.env:DATA_DIR}/train/ps/lr/*.pt
     - ${oc.env:DATA_DIR}/train/cape/lr/*.pt
+    # - ${oc.env:DATA_DIR}/train/pr/lr/*.pt
   hr_paths:
     # - ${oc.env:DATA_DIR}/train/pr/hr/*.pt
     - ${oc.env:DATA_DIR}/train/tas/hr/*.pt
@@ -68,11 +73,13 @@ train_data:
 validation_data:
   _target_: "ClimatExML.mlclasses.InputVariables"
   lr_paths:
+    # - ${oc.env:DATA_DIR}/validation/pr/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/tas/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/uas/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/vas/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/ps/lr/*.pt
     - ${oc.env:DATA_DIR}/validation/cape/lr/*.pt
+    # - ${oc.env:DATA_DIR}/validation/pr/lr/*.pt
   hr_paths:
     # - ${oc.env:DATA_DIR}/validation/pr/hr/*.pt
     - ${oc.env:DATA_DIR}/validation/tas/hr/*.pt

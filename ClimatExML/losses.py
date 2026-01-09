@@ -41,3 +41,27 @@ def content_MSELoss(
     criterion_pixelwise = nn.MSELoss().to(device)
     content_loss = criterion_pixelwise(hr, fake)
     return content_loss
+
+
+# adding crps to losses.py from wgan_gp_stoch.py old version 
+def crps_empirical(pred, truth): ##adapted from https://docs.pyro.ai/en/stable/_modules/pyro/ops/stats.html#crps_empirical
+    
+    if pred.shape[1:] != (1,) * (pred.dim() - truth.dim() - 1) + truth.shape:
+        raise ValueError(
+            "Expected pred to have one extra sample dim on left. "
+            "Actual shapes: {} versus {}".format(pred.shape, truth.shape)
+        )
+    opts = dict(device=pred.device, dtype=pred.dtype)
+    num_samples = pred.size(0)
+    if num_samples == 1:
+        return (pred[0] - truth).abs()
+
+    pred = pred.sort(dim=0).values
+    diff = pred[1:] - pred[:-1]
+    weight = torch.arange(1, num_samples, **opts) * torch.arange(
+        num_samples - 1, 0, -1, **opts
+    )
+    weight = weight.reshape(weight.shape + (1,) * (diff.dim() - 1))
+
+    return (pred - truth).abs().mean(0) - (diff * weight).sum(0) / num_samples**2
+

@@ -4,6 +4,7 @@ from torchmetrics.functional import mean_absolute_error, mean_squared_error
 from torchmetrics.functional.image import multiscale_structural_similarity_index_measure
 from lightning.pytorch.loggers import CometLogger
 
+from ClimatExML.losses import crps_empirical #added crps_empirical from losses.py
 from ClimatExML.models import HRStreamGenerator, Critic
 from ClimatExML.trainer_utils import go_downhill, configure_figure, compute_gradient_penalty
 from ClimatExML.base_trainer import BaseSuperResolutionTrainer
@@ -50,6 +51,7 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         self.n_critic = hyperparameters.n_critic
         self.alpha = hyperparameters.alpha
         self.is_noise = hyperparameters.noise_injection
+        self.n_realisations = hyperparameters.n_realisations
 
         self.lr_shape = invariant.lr_shape
         self.hr_shape = invariant.hr_shape
@@ -74,13 +76,17 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         lr, hr, hr_cov = batch[0]
         return lr.float(), hr.float(), hr_cov.float()
 
-    def losses(self, set_type, hr, sr, mean_sr, mean_hr):
-        return {
+    def losses(self, set_type, hr, sr, mean_sr, mean_hr, crps=None):
+        losses_dict = {
             f"{set_type} MAE": mean_absolute_error(sr, hr),
             f"{set_type} MSE": mean_squared_error(sr, hr),
             #f"{set_type} MSSIM": multiscale_structural_similarity_index_measure(sr, hr),
             f"{set_type} Wasserstein Distance": mean_hr - mean_sr,
         }
+        # Add CRPS if provided
+        if crps is not None:
+            losses_dict[f"{set_type} CRPS"] = crps
+        return losses_dict
 
     def training_step(self, batch, batch_idx):
         lr, hr, hr_cov = self.unpack_batch(batch)
@@ -94,14 +100,46 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         loss_c = mean_sr - mean_hr + self.gp_lambda * gp
         go_downhill(self, loss_c, c_opt)
 
+        # Initialize crps_mean for logging
+        crps_mean = None
+
+        # Train generator every n_critic iterations
         if (batch_idx + 1) % self.n_critic == 0:
             self.toggle_optimizer(g_opt)
+            
+            # Generate single realization for adversarial loss
             sr = self.G(lr, hr_cov)
-            loss_g = -torch.mean(self.C(sr)) + self.alpha * mean_squared_error(sr, hr)
+            
+            # Prepare data for CRPS computation (multiple realizations per sample)
+            batch_size = lr.shape[0]
+            
+            # Repeat each sample n_realisation times to generate ensemble
+            dat_lr = [lr[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                    for i in range(batch_size)]
+            dat_hr_cov = [hr_cov[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                        for i in range(batch_size)]
+            dat_hr = [hr[i] for i in range(batch_size)]
+            
+            # Generate ensemble realizations and compute CRPS for each sample
+            dat_sr = [self.G(lr_rep, cov_rep) 
+                    for lr_rep, cov_rep in zip(dat_lr, dat_hr_cov)]
+            crps_ls = [crps_empirical(sr_ens, hr_true) 
+                    for sr_ens, hr_true in zip(dat_sr, dat_hr)]
+            crps = torch.cat(crps_ls)
+
+            crps_mean = torch.mean(crps)
+
+            # Get adversarial loss component
+            adv_loss = torch.mean(self.C(sr))
+            
+            # Combined loss: adversarial + content (CRPS)
+            loss_g = -adv_loss + self.alpha * crps_mean
+            
             go_downhill(self, loss_g, g_opt)
 
         self.log_dict(
-            self.losses("Train", hr, sr.detach(), mean_sr.detach(), mean_hr.detach()),
+            self.losses("Train", hr, sr.detach(), mean_sr.detach(), mean_hr.detach(), 
+                    crps=crps_mean.detach() if crps_mean is not None else None),
             sync_dist=True,
         )
 
@@ -113,8 +151,24 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         sr = self.G(lr, hr_cov).detach()
         mean_sr = self.C(sr).mean()
         mean_hr = self.C(hr).mean()
+        
+        # Compute CRPS on validation set
+        batch_size = lr.shape[0]
+        dat_lr = [lr[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                for i in range(batch_size)]
+        dat_hr_cov = [hr_cov[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
+                    for i in range(batch_size)]
+        dat_hr = [hr[i] for i in range(batch_size)]
+        
+        dat_sr = [self.G(lr_rep, cov_rep) 
+                for lr_rep, cov_rep in zip(dat_lr, dat_hr_cov)]
+        crps_ls = [crps_empirical(sr_ens, hr_true) 
+                for sr_ens, hr_true in zip(dat_sr, dat_hr)]
+        crps = torch.cat(crps_ls)
+        crps_mean = torch.mean(crps)
+        
         self.log_dict(
-            self.losses("Validation", hr, sr, mean_sr, mean_hr),
+            self.losses("Validation", hr, sr, mean_sr, mean_hr, crps=crps_mean),
             sync_dist=True,
         )
 

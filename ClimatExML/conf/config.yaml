@@ -11,8 +11,9 @@ hyperparameters:
   alpha: 500.0
   n_critic: 5
   max_epochs: 50
-  noise_injection: false # experimental
+  noise_injection: True
   batch_size: 16
+  n_realisations: 4
 
 tracking:
   # set COMET_API_KEY environment variable for online mode

@@ -76,16 +76,16 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         lr, hr, hr_cov = batch[0]
         return lr.float(), hr.float(), hr_cov.float()
 
-    def losses(self, set_type, hr, sr, mean_sr, mean_hr, crps=None):
+    def losses(self, set_type, gen_loss, adv_loss, cont_loss, mean_sr, mean_hr, crit_loss=None, grad_pen=None):
         losses_dict = {
-            f"{set_type} MAE": mean_absolute_error(sr, hr),
-            f"{set_type} MSE": mean_squared_error(sr, hr),
-            #f"{set_type} MSSIM": multiscale_structural_similarity_index_measure(sr, hr),
+            f"{set_type} Generator Loss": gen_loss,
+            f"{set_type} Adversarial Loss" : adv_loss,
+            f"{set_type} Content_loss" : cont_loss,
             f"{set_type} Wasserstein Distance": mean_hr - mean_sr,
         }
-        # Add CRPS if provided
-        if crps is not None:
-            losses_dict[f"{set_type} CRPS"] = crps
+        if set_type == 'Train':
+            losses_dict[f"{set_type} Critic Loss"] = crit_loss
+            losses_dict[f"{set_type} Gradient Penalty"] = grad_pen
         return losses_dict
 
     def training_step(self, batch, batch_idx):
@@ -99,9 +99,6 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         gp = compute_gradient_penalty(self.C, hr, sr)
         loss_c = mean_sr - mean_hr + self.gp_lambda * gp
         go_downhill(self, loss_c, c_opt)
-
-        # Initialize crps_mean for logging
-        crps_mean = None
 
         # Train generator every n_critic iterations
         if (batch_idx + 1) % self.n_critic == 0:
@@ -129,19 +126,28 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
 
             crps_mean = torch.mean(crps)
 
+            cont_loss = self.alpha * crps_mean
+
             # Get adversarial loss component
             adv_loss = torch.mean(self.C(sr))
             
             # Combined loss: adversarial + content (CRPS)
-            loss_g = -adv_loss + self.alpha * crps_mean
+            loss_g = -adv_loss + cont_loss
             
             go_downhill(self, loss_g, g_opt)
 
-        self.log_dict(
-            self.losses("Train", hr, sr.detach(), mean_sr.detach(), mean_hr.detach(), 
-                    crps=crps_mean.detach() if crps_mean is not None else None),
-            sync_dist=True,
-        )
+            self.log_dict(
+                self.losses(set_type="Train",
+                            gen_loss=loss_g,
+                            adv_loss=adv_loss.detach(),
+                            cont_loss=cont_loss,
+                            mean_sr=mean_sr.detach(),
+                            mean_hr=mean_hr.detach(),
+                            crit_loss=loss_c,
+                            grad_pen=self.gp_lambda * gp,
+                            ),
+                sync_dist=True,
+            )
 
         if (batch_idx + 1) % self.log_every_n_steps == 0:
             configure_figure(self.G, self.logger, "Train", lr, hr, hr_cov)
@@ -151,7 +157,7 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         sr = self.G(lr, hr_cov).detach()
         mean_sr = self.C(sr).mean()
         mean_hr = self.C(hr).mean()
-        
+
         # Compute CRPS on validation set
         batch_size = lr.shape[0]
         dat_lr = [lr[i].unsqueeze(0).repeat(self.n_realisations, 1, 1, 1) 
@@ -166,9 +172,19 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
                 for sr_ens, hr_true in zip(dat_sr, dat_hr)]
         crps = torch.cat(crps_ls)
         crps_mean = torch.mean(crps)
-        
+        cont_loss = self.alpha * crps_mean
+
+        adv_loss = torch.mean(self.C(sr))
+        loss_g = -adv_loss + cont_loss
+
         self.log_dict(
-            self.losses("Validation", hr, sr, mean_sr, mean_hr, crps=crps_mean),
+            self.losses(set_type="Validation",
+                        gen_loss=loss_g,
+                        adv_loss=adv_loss.detach(),
+                        cont_loss=cont_loss,
+                        mean_sr=mean_sr.detach(),
+                        mean_hr=mean_hr.detach(),
+                        ),
             sync_dist=True,
         )
 

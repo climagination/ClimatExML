@@ -138,13 +138,13 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
 
             self.log_dict(
                 self.losses(set_type="Train",
-                            gen_loss=loss_g,
+                            gen_loss=loss_g.detach(),
                             adv_loss=adv_loss.detach(),
-                            cont_loss=cont_loss,
+                            cont_loss=cont_loss.detach(),
                             mean_sr=mean_sr.detach(),
                             mean_hr=mean_hr.detach(),
-                            crit_loss=loss_c,
-                            grad_pen=self.gp_lambda * gp,
+                            crit_loss=loss_c.detach(),
+                            grad_pen=self.gp_lambda * gp.detach(),
                             ),
                 sync_dist=True,
             )
@@ -179,9 +179,9 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
 
         self.log_dict(
             self.losses(set_type="Validation",
-                        gen_loss=loss_g,
+                        gen_loss=loss_g.detach(),
                         adv_loss=adv_loss.detach(),
-                        cont_loss=cont_loss,
+                        cont_loss=cont_loss.detach(),
                         mean_sr=mean_sr.detach(),
                         mean_hr=mean_hr.detach(),
                         ),

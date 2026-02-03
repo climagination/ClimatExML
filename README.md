@@ -5,8 +5,9 @@
 
 Climate data focused PyTorch Lightning implementation of Wasserstein GANs for super-resolution. 
 
-## Documentation
-Click this link -> [![Jupyter Book Badge](https://img.shields.io/badge/Jupyter-Book-orange?style=for-the-badge&logo=jupyter)](https://climagination.github.io/ClimatExML/intro.html)
+## 📚 Documentation 
+[![Jupyter Book](https://img.shields.io/badge/Jupyter%20Book-Docs-orange?style=for-the-badge&logo=jupyter&logoColor=white)](https://climagination.github.io/ClimatExML/intro.html) 
+**[→ View Full Documentation](https://climagination.github.io/ClimatExML/intro.html)**
 
 ### Quick Start
 

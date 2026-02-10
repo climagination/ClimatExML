@@ -1,17 +1,17 @@
 # Declare model trainer type, current options: cnn, wgan
 trainer: wgan
-resume_from_checkpoint: null
+resume_from_checkpoint: "/home/seamus/projects/def-monahana/sbeairsto/ClimatEx/ClimatExML/checkpoints/bs_64_ns_6_lr_00025_drif_pen_encore/last-v1.ckpt"
 
 hyperparameters:
   # Adam Optimizer
-  learning_rate: 0.0001
+  learning_rate: 0.00025
   b1: 0.9
   b2: 0.99
   gp_lambda: 10
   drift_epsilon: 1e-4
   alpha: 500.0
   n_critic: 5
-  max_epochs: 200
+  max_epochs: 500
   noise_injection: True
   batch_size: 64
   n_realisations: 6
@@ -21,7 +21,7 @@ tracking:
   project_name: climatex
   workspace: sbeairsto
   save_dir: ${oc.env:OUTPUT_COMET_ZIP}
-  experiment_name: bs_64_ns_12_lr_0001
+  experiment_name: bs_64_ns_6_lr_00025_drif_pen_encore2
   log_model: True
   log_every_n_steps: 100
   validation_log_every_n_steps: 500

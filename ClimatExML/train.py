@@ -32,12 +32,16 @@ def main(cfg: dict):
 
     # Checkpoint callback
     checkpoint_callback = ModelCheckpoint(
-        dirpath=f"{tracking.save_dir}/checkpoints",
-        filename="{epoch}-{step}",
+        dirpath=f"{tracking.save_dir}/checkpoints/{tracking.experiment_name}",
+        filename="epoch={epoch:03d}-step={step:07d}-val_gen_loss={Validation Generator Loss:.4f}",
         save_last=True,
-        save_top_k=1,
-        monitor=None,  # or "val_loss" if you have a meaningful metric
+        save_top_k=3,  # Keep best 3 checkpoints
+        monitor="Validation Generator Loss",  # Monitor validation generator loss
+        mode="min",
         every_n_epochs=1,
+        auto_insert_metric_name=False,  # We're manually adding metric to filename
+        save_on_train_epoch_end=True,
+        verbose=True,
     )
 
     # These are objects instantiated with config information (see config.yaml)

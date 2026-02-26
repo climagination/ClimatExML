@@ -103,11 +103,10 @@ def save_output_to_zarr(
     logger: logging.Logger,
 ) -> None:
     """
-    Save model output to a zarr dataset.
+    Save model output to a zarr dataset with geospatial coordinates.
 
     Args:
         output (Tensor): Model output of shape [T, N, C, H, W] or [T, C, H, W].
-        datetimes (List[datetime64]): List of datetime64 timestamps of length T.
         output_variables (List[str]): List of variable names corresponding to C channels.
         model_path (Path): Path to the model file, used for naming the output directory.
         emulation_loader (DataLoader): DataLoader that holds data filepaths.
@@ -125,6 +124,9 @@ def save_output_to_zarr(
     assert C == len(output_variables), "Mismatch between output channels and variable names"
     assert T == len(datetimes), "Mismatch between time dimension and datetime list"
 
+    # Load grid coordinates
+    grid = load_grid_coordinates(model_path, logger)
+
     for c, var in enumerate(output_variables):
         data = output[:, :, c, :, :].cpu().numpy()  # shape [T, N, H, W]
 
@@ -141,15 +143,23 @@ def save_output_to_zarr(
             "emulator_model": model_path.stem,
         }
 
+        # Create base coordinates
+        coords = {
+            "time": datetimes,
+            "realization": np.arange(N),
+            "rlat": np.arange(H),
+            "rlon": np.arange(W),
+        }
+
+        # Add lat/lon coordinates if grid is available
+        if grid is not None:
+            coords["lat"] = (["rlat", "rlon"], grid.lat.values)
+            coords["lon"] = (["rlat", "rlon"], grid.lon.values)
+
         da = xr.DataArray(
             data,
-            dims=("time", "realization", "rlon", "rlat"),
-            coords={
-                "time": datetimes,
-                "realization": np.arange(data.shape[1]),
-                "rlon": np.arange(data.shape[2]),
-                "rlat": np.arange(data.shape[3]),
-            },
+            dims=("time", "realization", "rlat", "rlon"),
+            coords=coords,
             attrs=attrs
         )
 
@@ -157,16 +167,16 @@ def save_output_to_zarr(
 
         zarr_path = get_save_path_from_example_path(example_path, var, model_path)
         ds.to_zarr(zarr_path, mode="w")
-        logger.info(f"✅ Saved '{var}' to {zarr_path}.")
+        logger.info(f"✅ Saved '{var}' to {zarr_path} with geospatial coordinates.")
 
 
 def extract_datetimes_from_filenames(filenames: List[str]) -> np.ndarray:
     """
     Extract datetime64[ns] array from filenames like 'uas_2000-10-01-06.pt'.
-    
+
     Args:
         filenames (List[str]): List of file paths or names.
-    
+
     Returns:
         np.ndarray: Array of datetime64[ns] values.
     """
@@ -181,7 +191,7 @@ def extract_datetimes_from_filenames(filenames: List[str]) -> np.ndarray:
             datetimes.append(dt)
         else:
             raise ValueError(f"No valid datetime found in filename: {name}")
-    
+
     return np.array(datetimes)
 
 
@@ -215,8 +225,8 @@ def load_metadata_json(var_name: str, model_path: Path) -> Dict:
     Returns:
         dict: Parsed metadata dictionary.
     """
-    metadata_dir = model_path.parent / "metadata"
-    json_files = glob(str(metadata_dir / f"{var_name}_*.json"))
+    metadata_dir = model_path.parent / "../feature_scaling_metadata"
+    json_files = glob(str(metadata_dir / f"hr_{var_name}_*.json"))
     if not json_files:
         raise FileNotFoundError(f"No metadata file found for variable '{var_name}' in {metadata_dir}")
 
@@ -266,3 +276,39 @@ def un_normalize(output: torch.Tensor, output_variables: List[str], model_path: 
 
     logger.info("✅ Un-normalization complete.")
     return torch.cat(unnormalized, dim=2)  # [T, N, C, H, W]
+
+
+def load_grid_coordinates(model_path: Path, logger: logging.Logger) -> Optional[xr.Dataset]:
+    """
+    Load grid coordinates from the target grid NetCDF file.
+
+    Args:
+        model_path (Path): Path to the model file.
+        logger (logging.Logger): Logger for status updates.
+
+    Returns:
+        xr.Dataset or None: Grid dataset with lat/lon coordinates, or None if not found.
+    """
+    # Look for grid file in the expected location
+    grid_dir = model_path.parent / "../grid"
+
+    # Try to find grid file matching the model name pattern
+    grid_files = list(grid_dir.glob("*_target_grid.nc"))
+
+    if not grid_files:
+        logger.warning(f"⚠️ No grid file found in {grid_dir}. Output will not have lat/lon coordinates.")
+        return None
+
+    if len(grid_files) > 1:
+        logger.warning(f"⚠️ Multiple grid files found. Using first: {grid_files[0].name}")
+
+    grid_file = grid_files[0]
+    logger.info(f"📐 Loading grid coordinates from {grid_file.name}")
+
+    try:
+        grid = xr.open_dataset(grid_file)
+        logger.info(f"   Grid dimensions: {dict(grid.sizes)}")
+        return grid
+    except Exception as e:
+        logger.error(f"❌ Failed to load grid file: {e}")
+        return None

@@ -8,6 +8,7 @@ hyperparameters:
   b1: 0.9
   b2: 0.99
   gp_lambda: 10
+  drift_epsilon: 1e-4
   alpha: 500.0
   n_critic: 5
   max_epochs: 50
@@ -27,7 +28,7 @@ tracking:
 
 hardware:
   num_workers: 0 # modify for cpu requested on SLURM, typically I use 11
-  precision: 16-mixed # 16-mixed is unstable, use 32 if memory allows
+  precision: bf16-mixed # 16-mixed is unstable, use 32 if memory allows
   accelerator: "gpu"
   devices: -1
   strategy: "auto" # user "ddp_find_unused_parameters_true" for SLURM

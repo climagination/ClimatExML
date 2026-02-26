@@ -48,6 +48,7 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         self.b1 = hyperparameters.b1
         self.b2 = hyperparameters.b2
         self.gp_lambda = hyperparameters.gp_lambda
+        self.drift_epsilon = hyperparameters.drift_epsilon
         self.n_critic = hyperparameters.n_critic
         self.alpha = hyperparameters.alpha
         self.is_noise = hyperparameters.noise_injection
@@ -97,7 +98,9 @@ class SuperResolutionWGANGP(BaseSuperResolutionTrainer):
         mean_sr = self.C(sr).mean()
         mean_hr = self.C(hr).mean()
         gp = compute_gradient_penalty(self.C, hr, sr)
-        loss_c = mean_sr - mean_hr + self.gp_lambda * gp
+        drift = (mean_hr ** 2) * self.drift_epsilon
+
+        loss_c = mean_sr - mean_hr + self.gp_lambda * gp + drift
         go_downhill(self, loss_c, c_opt)
 
         # Train generator every n_critic iterations
